@@ -23,11 +23,10 @@ export class Line extends React.PureComponent<LineProps, object> {
     const lineStyle: ViewStyle = {borderColor, borderStyle};
 
     return (
-      <View style={[viewStyles.line, lineStyle]} pointerEvents="none"/>
+      <View style={[viewStyles.line, lineStyle]} pointerEvents="none" />
     );
   }
 }
-
 
 const viewStyles = StyleSheet.create({
   line: {

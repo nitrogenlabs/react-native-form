@@ -1,7 +1,10 @@
-import {capitalize, cloneDeep, forEach} from 'lodash';
+import {Flux} from 'arkhamjs';
+import {cloneDeep, forEach, isEqual} from 'lodash';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {Keyboard, View, ViewStyle} from 'react-native';
+import {ComponentConstants} from '../constants/ComponentConstants';
+import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 
 export interface FormUpdateProps {
   readonly actionType: string;
@@ -25,26 +28,22 @@ export interface FormProps {
 }
 
 export interface FormContextType {
-  add: (field: FormFieldType) => void;
+  add: (field: FormField<FormFieldProps, FormFieldState>) => void;
   errors: object;
   isFormValid: () => void;
   reset: () => void;
   submit: () => void;
-  update: (field: FormFieldType) => void;
+  update: (actionType: string, name: string, value: string) => void;
   validate: () => void;
   values: object;
 }
 
 export interface FormFieldListType {
-  [key: string]: FormFieldType;
+  [key: string]: FormField<FormFieldProps, FormFieldState>;
 }
 
 export interface FormFieldType {
-  readonly actionType?: string;
   readonly name: string;
-  readonly blur?: () => Promise<void>;
-  readonly isUpdated?: boolean;
-  readonly types?: string[];
   readonly value: any;
 }
 
@@ -90,8 +89,11 @@ export class Form extends React.Component<FormProps, object> {
     // Methods
     this.addField = this.addField.bind(this);
     this.isFormValid = this.isFormValid.bind(this);
+    this.onChange = this.onChange.bind(this);
+    this.onClose = this.onClose.bind(this);
     this.submit = this.submit.bind(this);
     this.update = this.update.bind(this);
+    this.updateFormFields = this.updateFormFields.bind(this);
     this.validate = this.validate.bind(this);
 
     // Properties
@@ -101,12 +103,23 @@ export class Form extends React.Component<FormProps, object> {
     this.values = cloneDeep(values);
   }
 
+  componentDidMount(): void {
+    // Add listeners
+    Flux.on(ComponentConstants.PICKER_CHANGE, this.onChange);
+    Flux.on(ComponentConstants.PICKER_CLOSE, this.onClose);
+  }
+
+  componentWillUnmount(): void {
+    // Remove listeners
+    Flux.off(ComponentConstants.PICKER_CHANGE, this.onChange);
+    Flux.off(ComponentConstants.PICKER_CLOSE, this.onClose);
+  }
+
   componentWillReceiveProps(props): void {
     const {values} = props;
 
-    if(!Object.is(this.values, values)) {
-      this.values = cloneDeep(values);
-      this.validate();
+    if(!isEqual(this.values, values)) {
+      this.updateFormFields(values);
     }
   }
 
@@ -123,16 +136,17 @@ export class Form extends React.Component<FormProps, object> {
     };
   }
 
-  addField(field: FormFieldType): void {
+  addField(field: FormField<FormFieldProps, FormFieldState>): void {
     const {name} = field;
-    const existingField: FormFieldType = this.fields[name];
 
     if(name) {
-      if(!existingField) {
+      if(!this.fields[name]) {
+        // Save the reference of the form field if not already saved
         this.fields[name] = field;
-      }
 
-      this.validate('init');
+        // Update the value of the form field to any set values to the actual form
+        this.update('init', name, this.values[name]);
+      }
     }
   }
 
@@ -142,85 +156,84 @@ export class Form extends React.Component<FormProps, object> {
     return errorKeys.length === 0;
   }
 
-  validate(actionType?: string): void {
-    let extraErrors: object = {};
-    const {onValidate} = this.props;
-
-    // If there are extra validations, make sure those are included
-    if(onValidate) {
-      extraErrors = onValidate(this.fields) || {};
-    }
-
-    forEach(this.fields, (field: FormFieldType) => {
-      const {isUpdated, name, types} = field;
-      const value = this.values[name];
-      this.errors[name] = (types || [])
-        .map((errorType: string): any => {
-          switch(errorType) {
-            case 'required':
-              if(!value && (isUpdated && actionType !== 'submit')) {
-                return {errorType, message: `${capitalize(name)} is required.`, actionType};
-              }
-
-              return null;
-            case 'email':
-              break;
-            case 'url':
-              break;
-            default:
-              return null;
-          }
-        })
-        .filter((errorObj: object) => !!errorObj);
-
-      if(extraErrors[name]) {
-        this.errors[name].concat(extraErrors[name]);
-      }
-
-      if(!this.errors[name].length) {
-        delete this.errors[name];
+  updateFormFields(values): void {
+    Object.keys(values).forEach((name: string) => {
+      if(!isEqual(this.values[name], values[name])) {
+        this.update('change', name, values[name]);
       }
     });
   }
 
-  update(updatedField: FormFieldType): void {
-    const {actionType, name, value} = updatedField;
-    const {onUpdate} = this.props;
+  validate(actionType?: string): void {
+    // let extraErrors: object = {};
+    // const {onValidate} = this.props;
 
+    // // If there are extra validations, make sure those are included
+    // if(onValidate) {
+    //   extraErrors = onValidate(this.fields) || {};
+    // }
+
+    // forEach(this.fields, (field: FormField<FormFieldProps, FormFieldState>) => {
+    //   const {isUpdated, name, types, value} = field;
+
+    //   this.errors[name] = (types || [])
+    //     .map((errorType: string): any => {
+    //       switch(errorType) {
+    //         case 'required':
+    //           if(!value && (isUpdated && actionType !== 'submit')) {
+    //             return {errorType, message: `${capitalize(name)} is required.`, actionType};
+    //           }
+
+    //           return null;
+    //         case 'email':
+    //           break;
+    //         case 'url':
+    //           break;
+    //         default:
+    //           return null;
+    //       }
+    //     })
+    //     .filter((errorObj: object) => !!errorObj);
+
+    //   if(extraErrors[name]) {
+    //     this.errors[name].concat(extraErrors[name]);
+    //   }
+
+    //   if(!this.errors[name].length) {
+    //     delete this.errors[name];
+    //   }
+    // });
+  }
+
+  update(actionType: string, name: string, value: string): void {
     if(!name) {
       return;
     }
 
-    const field: FormFieldType = this.fields[name];
+    if(this.fields[name]) {
+      // Update values in form for submission object
+      this.values[name] = cloneDeep(value);
 
-    if(field) {
-      this.values = {
-        ...this.values,
-        [name]: value
-      };
-
-      const validateField: FormFieldType = {
-        ...field,
-        isUpdated: true
-      };
-
-      this.fields[name] = validateField;
-      this.validate(actionType);
+      // Update value in field for display
+      this.fields[name].updateValue(value);
     }
 
-    if(onUpdate) {
-      const valid: boolean = this.isFormValid();
-      const updateProps: FormUpdateProps = {
-        actionType,
-        name,
-        valid,
-        value,
-        values: this.values
-      };
+    // Only call update listener if a change action has occurred
+    if(actionType !== 'init') {
+      const {onUpdate} = this.props;
 
-      onUpdate(updateProps);
-    } else {
-      this.setState({values: cloneDeep(this.values)});
+      // Call the form update listener
+      if(onUpdate) {
+        const updateProps: FormUpdateProps = {
+          actionType,
+          name,
+          valid: this.isFormValid(),
+          value,
+          values: cloneDeep(this.values)
+        };
+
+        onUpdate(updateProps);
+      }
     }
   }
 
@@ -236,34 +249,33 @@ export class Form extends React.Component<FormProps, object> {
     // Check if valid
     if(this.isFormValid()) {
       // Make sure we blur all fields
-      const promises = [];
-
       if(blurOnSubmit) {
-        forEach(this.fields, (field: FormFieldType) => {
-          const blur = field.blur;
-
-          if(blur) {
-            const p = blur();
-
-            // If blur function returns a promise, queue promise to wait on
-            if(p && typeof p.then === 'function') {
-              promises.push(p);
-            }
-          }
+        forEach(this.fields, (field: FormField<FormFieldProps, FormFieldState>) => {
+          field.blur();
         });
       }
 
-      Promise.all(promises)
-        .then(() => {
-          // Submit
-          if(onSubmit) {
-            onSubmit(this.values);
-          }
+      // Submit
+      if(onSubmit) {
+        onSubmit(this.values);
+      }
 
-          if(onReset) {
-            onReset();
-          }
-        });
+      if(onReset) {
+        onReset();
+      }
+    }
+  }
+
+  onChange(data: FormUpdateProps): void {
+    const {name, value} = data;
+    this.update('change', name, value);
+  }
+
+  onClose(data): void {
+    const {name} = data;
+
+    if(this.fields[name]) {
+      this.fields[name].close();
     }
   }
 

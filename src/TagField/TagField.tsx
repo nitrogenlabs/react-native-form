@@ -74,13 +74,14 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     // Initial state
     const {tags} = this.props;
 
-    this.state = {
+    const state: TagFieldState = {
       isFocused: false,
       searchFilterTags: tags,
       searchQuery: '',
       selectedTags: [],
       tags
     };
+    this.state = state as any;
 
     // Get component theme
     this.componentTheme = {...uiTheme, ...props.theme};
@@ -103,7 +104,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
       onFocus();
     }
 
-    this.setState({isFocused: true, receivedFocus: true});
+    this.setState({isFocused: true});
   }
 
   onSubmitEditing(event: {nativeEvent: {text: string}}): void {
@@ -134,7 +135,6 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
   addTag(item: SelectOptionType): void {
     const {searchFilterTags, selectedTags} = this.state;
 
-    console.log('addTag', item);
     // Add tag to selected tag list
     selectedTags.push(item);
 
@@ -341,6 +341,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
       inputFieldFont,
       inputFieldTextSize,
       inputFieldKeyboardAppearance,
+      inputFieldLabelColor,
       inputFieldLabelSize,
       inputFieldSelectionColor,
       inputFieldTextColor
@@ -369,6 +370,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
           keyboardAppearance={inputFieldKeyboardAppearance}
           keyboardType="default"
           label={label}
+          labelColor={inputFieldLabelColor}
           labelFontSize={inputFieldLabelSize}
           maxLength={maxLength}
           onBlur={this.onBlur}
@@ -378,7 +380,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
           placeholder={placeholder}
           prefix="#"
           returnKeyType="default"
-          ref={(r) => this.field = r}
+          ref={(r) => this.inputField = r}
           selectionColor={inputFieldSelectionColor}
           textColor={inputFieldTextColor}
           tintColor={inputFieldSelectionColor}

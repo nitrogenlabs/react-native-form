@@ -1,6 +1,5 @@
-import {DateUtils} from '@nlabs/react-native-utils';
-import {Flux, FluxAction} from 'arkhamjs-native';
-import moment, {Moment} from 'moment-timezone';
+import {Flux, FluxAction} from 'arkhamjs';
+import {DateTime} from 'luxon';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {
@@ -12,8 +11,7 @@ import {
   ViewStyle
 } from 'react-native';
 import {ComponentConstants} from '../constants/ComponentConstants';
-import {FormFieldType} from '../Form/Form';
-import {FormField, FormFieldProps} from '../FormField/FormField';
+import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 import {DateTimeConfigType} from '../types/InputTypes';
 import {uiTheme} from '../UITheme';
 
@@ -32,9 +30,7 @@ export interface DateTimeFieldProps extends FormFieldProps {
   readonly timezone?: string;
 }
 
-export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
-  private componentTheme: any;
-
+export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState> {
   static propTypes: object = {
     ...FormField.propTypes,
     dateFormat: PropTypes.string,
@@ -43,7 +39,7 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
     minimumDate: PropTypes.number,
     minuteInterval: PropTypes.number,
     mode: PropTypes.string,
-    onClick: PropTypes.func,
+    onPress: PropTypes.func,
     placeholder: PropTypes.string,
     placeholderTextColor: PropTypes.string,
     style: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
@@ -53,7 +49,7 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
   };
 
   static defaultProps: object = {
-    format: 'M/D/YY h:mm a',
+    format: 'D h:mm a',
     label: '',
     minuteInterval: 1,
     mode: 'datetime',
@@ -77,7 +73,7 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
     this.blur = this.blur.bind(this);
     this.convertTime = this.convertTime.bind(this);
     this.focus = this.focus.bind(this);
-    this.onClick = this.onClick.bind(this);
+    this.onPress = this.onPress.bind(this);
     this.onClose = this.onClose.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
     this.openDateTime = this.openDateTime.bind(this);
@@ -86,35 +82,19 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
     this.componentTheme = {...uiTheme, ...props.theme};
   }
 
-  componentWillMount(): void {
-    const {name} = this.props;
-
-    Flux.on(`${ComponentConstants.DATETIME_OPEN}${name}`, this.onUpdate);
-    Flux.on(`${ComponentConstants.PICKER_CHANGE}${name}`, this.onUpdate);
-    Flux.on(`${ComponentConstants.PICKER_CLOSE}${name}`, this.onClose);
-  }
-
   componentDidMount(): void {
-    const {name, required} = this.props;
-    const types: string[] = ['dateTime'];
+    const {required} = this.props;
+    this.types = ['dateTime'];
 
     if(required) {
-      types.push('required');
+      this.types.push('required');
     }
 
-    this.context.add({name, types});
-  }
-
-  componentWillUnmount(): void {
-    const {name} = this.props;
-
-    Flux.off(`${ComponentConstants.DATETIME_OPEN}${name}`, this.onUpdate);
-    Flux.off(`${ComponentConstants.PICKER_CHANGE}${name}`, this.onUpdate);
-    Flux.off(`${ComponentConstants.PICKER_CLOSE}${name}`, this.onClose);
+    this.context.add(this);
   }
 
   focus(): void {
-    this.onClick();
+    this.onPress();
   }
 
   blur(): void {
@@ -123,7 +103,6 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
 
   async openDateTime(config: DateTimeConfigType): Promise<FluxAction> {
     const {name, value, label, minimumDate, minuteInterval, mode, timezone} = config;
-    await Flux.dispatch({type: `${ComponentConstants.DATETIME_OPEN}${name}`, name, value});
     return Flux.dispatch({
       label,
       minimumDate,
@@ -136,17 +115,15 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
     });
   }
 
-  onClick(): void {
+  onPress(): void {
     const {label, minimumDate, minuteInterval, mode, name, timezone} = this.props;
     const minimumDateObj: Date = new Date(minimumDate);
-    const value: number = this.getValue();
-    const offset: string = moment().format('Z');
-    const defaultValue: number = isNaN(value) ? +(new Date()) : value;
-    const dateObj: Moment = mode === 'time' ? DateUtils.resetDay(moment(defaultValue))
-      : DateUtils.cleanTime(moment(defaultValue));
-    const formatted: string = dateObj.tz(timezone).format(`YYYY-MM-DD HH:mm:00.000[${offset}]`);
-    const dateValue: Date = moment(formatted).toDate();
-
+    const numValue: number = +(this.value);
+    const defaultValue: number = isNaN(numValue) ? +(new Date()) : numValue;
+    const dateValue: Date = DateTime.fromMillis(defaultValue)
+      .setZone(timezone)
+      .set({second: 0, millisecond: 0})
+      .toJSDate();
     this.openDateTime({
       label,
       minimumDate: minimumDateObj,
@@ -166,47 +143,30 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
     }
   }
 
-  onUpdate(data): void {
-    const value: number = this.convertTime(data.value, false);
-    const {onUpdate} = this.props;
+  updateValue(strValue: string): void {
+    const value: string = this.convertTime(+(strValue), false).toString();
+    this.isUpdated = true;
+    this.value = value;
+    this.setState({value});
 
-    this.updateValue(value, 'change');
+    // Call field update listener
+    const {onUpdate} = this.props;
 
     if(onUpdate) {
       onUpdate(value);
     }
   }
 
-  updateValue(value: number, actionType: string): void {
-    const {name} = this.props;
-    const field: FormFieldType = {
-      actionType,
-      name,
-      value
-    };
-
-    this.context.update(field);
-  }
-
-  getValue(): number {
-    const {name, value} = this.props;
-    return this.context.values[name] || value;
-  }
-
   convertTime(value: number, defaultOffset = false): number {
     const {timezone} = this.props;
-    let dateTime: number;
-    const dateObj: Moment = moment(value).second(0).millisecond(0);
+    let dateTime: DateTime = DateTime.fromMillis(value).set({second: 0, millisecond: 0});
 
     if(!defaultOffset && timezone) {
       /* offset = moment().tz(timezone).format('Z');*/
-      dateTime = +(dateObj.tz(timezone).format(`x`));
-    } else {
-      /* offset = moment().format('Z');*/
-      dateTime = +(dateObj.format(`x`));
+      dateTime = dateTime.setZone(timezone);
     }
 
-    return dateTime;
+    return dateTime.ts;
   }
 
   renderLabel(): JSX.Element {
@@ -239,10 +199,10 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
       inputFieldTextColor = '#000',
       inputFieldTextSize = 18
     } = this.componentTheme;
-    const defaultValue: number = this.getValue();
+    const defaultValue: number = +(this.value);
     const defaultDate: number = isNaN(defaultValue) ? +(new Date()) : defaultValue;
     const value: number = this.convertTime(defaultDate, true);
-    const label = value ? moment(value).tz(timezone).format(format) : placeholder;
+    const label = value ? DateTime.fromMillis(value).setZone(timezone).toFormat(format) : placeholder;
     const placeholderStyle = !value ? {color: inputFieldPlaceholderColor} : null;
     const themeLabelStyle: TextStyle = {
       color: inputFieldTextColor,
@@ -260,7 +220,7 @@ export class DateTimeField extends React.Component<DateTimeFieldProps, object> {
         <TouchableHighlight
           style={[viewStyles.field, themeFieldStyle, style]}
           underlayColor="transparent"
-          onPress={this.onClick}>
+          onPress={this.onPress}>
           <Text style={[viewStyles.label, themeLabelStyle, textStyle, placeholderStyle]}>{label}</Text>
         </TouchableHighlight>
       </View>

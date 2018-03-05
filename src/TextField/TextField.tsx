@@ -19,6 +19,7 @@ import {Line} from './Line';
 export interface TextFieldProps extends TextInputProperties {
   readonly animationDuration?: number;
   readonly baseColor?: string;
+  readonly borderColor?: string;
   readonly characterRestriction?: number;
   readonly containerStyle?: ViewStyle | ViewStyle[];
   readonly disabled?: boolean;
@@ -28,7 +29,8 @@ export interface TextFieldProps extends TextInputProperties {
   readonly fontSize?: number;
   readonly help?: string;
   readonly inputStyle?: TextStyle | TextStyle[];
-  readonly label: string;
+  readonly label?: string;
+  readonly labelColor?: string;
   readonly labelFontSize?: number;
   readonly prefix?: string;
   readonly renderAccessory?: () => JSX.Element;
@@ -57,6 +59,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     ...TextInput.propTypes,
     animationDuration: PropTypes.number,
     baseColor: PropTypes.string,
+    borderColor: PropTypes.string,
     characterRestriction: PropTypes.number,
     containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
     disabled: PropTypes.bool,
@@ -66,7 +69,8 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     fontSize: PropTypes.number,
     help: PropTypes.string,
     inputStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    label: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    labelColor: PropTypes.string,
     labelFontSize: PropTypes.number,
     prefix: PropTypes.string,
     renderAccessory: PropTypes.func,
@@ -80,14 +84,13 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     animationDuration: 225,
     autoCapitalize: 'sentences',
     baseColor: 'rgba(0, 0, 0, .5)',
-    blurOnSubmit: true,
-    disableFullscreenUI: true,
+    borderColor: '#000',
     disabled: false,
     editable: true,
     errorColor: 'rgb(213, 0, 0)',
     fontSize: 16,
+    labelColor: '#000',
     labelFontSize: 12,
-    textColor: 'rgba(0, 0, 0, .8)',
     theme: {},
     tintColor: 'rgb(0, 145, 234)',
     underlineColorAndroid: 'transparent'
@@ -166,20 +169,17 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
   }
 
   focus(): void {
-    /*
     const {disabled, editable} = this.props;
 
-    if(this.textInput && !disabled && editable) {
-      this.textInput.focus();
-    }*/
+    if(this.input && !disabled && editable) {
+      this.input.focus();
+    }
   }
 
   blur(): void {
-    /*
-    if(this.textInput) {
-      this.textInput.blur();
+    if(this.input) {
+      this.input.blur();
     }
-    */
   }
 
   clear(): void {
@@ -343,13 +343,14 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       fontFamily,
       fontSize: inputFieldHelpSize,
       fontStyle: 'italic',
+      fontWeight: '100',
       opacity: 0.7
     };
 
     const helperContainerStyle = {
       flexDirection: 'row',
       height: (help || limit) ?
-        inputFieldHelpSize * 2 :
+        inputFieldHelpSize * 1.5 :
         focus.interpolate({
           inputRange: [-1, 0, 1],
           outputRange: [24, 8, 8]
@@ -357,13 +358,12 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     };
 
     if(help || error) {
+      const helper = error ? <Helper style={errorStyle}>{error}</Helper> : <Helper style={helpStyle}>{help}</Helper>;
       return (
         <Animated.View style={helperContainerStyle}>
           <View style={viewStyles.flex}>
-            <Helper style={errorStyle}>{error}</Helper>
-            <Helper style={helpStyle}>{help}</Helper>
+            {helper}
           </View>
-
           <Counter {...{baseColor, errorColor, count, limit}} />
         </Animated.View>
       );
@@ -374,7 +374,9 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
 
   render(): JSX.Element {
     const {
+      inputFieldBorderColor = '#000',
       inputFieldBorderWidth = 1,
+      inputFieldDisabledColor = '#999',
       inputFieldFont = 'Helvetica',
       inputFieldErrorColor = '#D70303',
       inputFieldLabelColor = '#333',
@@ -387,6 +389,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     const {
       animationDuration,
       baseColor = inputFieldLabelColor,
+      borderColor = inputFieldBorderColor,
       characterRestriction: limit,
       containerStyle,
       defaultValue,
@@ -397,7 +400,9 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       fontSize = inputFieldTextSize,
       inputStyle,
       label,
+      labelColor = inputFieldLabelColor,
       labelFontSize: activeFontSize = inputFieldLabelSize,
+      style,
       textColor = inputFieldTextColor,
       tintColor = inputFieldSelectionColor,
       value,
@@ -414,7 +419,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       errorColor :
       focus.interpolate({
         inputRange: [-1, 0, 1],
-        outputRange: [errorColor, baseColor, tintColor]
+        outputRange: [errorColor, borderColor, tintColor]
       });
 
     const borderBottomWidth = restricted ?
@@ -422,12 +427,14 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       focus.interpolate({inputRange: [-1, 0, 1], outputRange: [2, StyleSheet.hairlineWidth, 2]});
 
     const updateContainerStyle = {
-      ...(disabled ? {overflow: 'hidden'} : {borderBottomColor, borderBottomWidth}),
+      borderBottomColor,
+      borderBottomWidth,
+      overflow: 'visible',
       ...(props.multiline ? {height: 40 + height} : {height: 40 + fontSize * 1.5})
     };
 
     const updateInputStyle = {
-      color: (disabled || defaultVisible) ? baseColor : textColor,
+      color: defaultVisible ? baseColor : textColor,
       ...(props.multiline ?
         {
           height: fontSize * 1.5 + height,
@@ -441,7 +448,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       active,
       activeFontSize,
       animationDuration,
-      baseColor,
+      baseColor: labelColor,
       errorColor,
       errored,
       fontFamily,
@@ -451,10 +458,23 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       tintColor
     };
 
+    if(disabled) {
+      labelProps.baseColor = inputFieldDisabledColor;
+      updateContainerStyle.borderBottomWidth = 0;
+      updateContainerStyle.overflow = 'hidden';
+      updateInputStyle.color = inputFieldDisabledColor;
+    } else {
+      updateContainerStyle.borderBottomColor = borderBottomColor;
+      updateContainerStyle.borderBottomWidth = borderBottomWidth;
+    }
+
     return (
-      <View onStartShouldSetResponder={() => true} onResponderRelease={this.focus}>
+      <View
+        style={[viewStyles.container, style]}
+        onStartShouldSetResponder={() => true}
+        onResponderRelease={this.focus}>
         <Animated.View style={[viewStyles.textField, updateContainerStyle, containerStyle]}>
-          {disabled && <Line type="dotted" color={baseColor} />}
+          {disabled && <Line type="dotted" color={inputFieldDisabledColor} />}
           {label && <Label {...labelProps}>{label}</Label>}
           <View style={viewStyles.row}>
             {this.renderAffix('prefix', active, isFocused)}
@@ -489,8 +509,14 @@ const viewStyles = StyleSheet.create({
     justifyContent: 'center',
     top: 2
   },
+  container: {
+    flexGrow: 1,
+    flexShrink: 0,
+    marginBottom: 5
+  },
   flex: {
-    flex: 1
+    flexGrow: 1,
+    flexShrink: 0
   },
   input: {
     flex: 1,
@@ -503,7 +529,8 @@ const viewStyles = StyleSheet.create({
   },
   textField: {
     backgroundColor: 'transparent',
-    marginBottom: 8,
+    flexDirection: 'column',
+    marginBottom: 3,
     paddingTop: 32
   }
 });

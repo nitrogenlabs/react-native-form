@@ -1,4 +1,4 @@
-import {Flux, FluxAction} from 'arkhamjs-native';
+import {Flux} from 'arkhamjs';
 import {head} from 'lodash';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -43,50 +43,13 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
     placeholder: 'Select...'
   };
 
-  static contextTypes: object = {
-    add: PropTypes.func.isRequired,
-    errors: PropTypes.object,
-    update: PropTypes.func.isRequired,
-    validate: PropTypes.func,
-    values: PropTypes.object.isRequired
-  };
-
   constructor(props: SelectFieldProps) {
     super(props);
 
     // Methods
     this.blur = this.blur.bind(this);
     this.focus = this.focus.bind(this);
-    this.onChange = this.onChange.bind(this);
-    this.onClose = this.onClose.bind(this);
     this.onPress = this.onPress.bind(this);
-  }
-
-  componentWillMount(): void {
-    const {name} = this.props;
-
-    // Add listener
-    Flux.on(`${ComponentConstants.PICKER_CHANGE}${name}`, this.onChange);
-    Flux.on(`${ComponentConstants.PICKER_CLOSE}${name}`, this.onClose);
-  }
-
-  componentDidMount(): void {
-    const {name, required, type} = this.props;
-    const types: string[] = [type];
-
-    if(required) {
-      types.push('required');
-    }
-
-    this.context.add({name, types});
-  }
-
-  componentWillUnmount(): void {
-    const {name} = this.props;
-
-    // Remove listener
-    Flux.off(`${ComponentConstants.PICKER_CHANGE}${name}`, this.onChange);
-    Flux.off(`${ComponentConstants.PICKER_CLOSE}${name}`, this.onClose);
   }
 
   focus(): void {
@@ -94,55 +57,15 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
   }
 
   blur(): void {
-    this.onClose();
+    this.close();
   }
 
   onPress(): void {
-    const {disabled, label, list, name, value} = this.props;
+    const {disabled, label, list, name} = this.props;
 
     if(!disabled) {
-      let selectedValue: string = '';
-
-      if(!value) {
-        selectedValue = this.getValue();
-      }
-
-      this.pickerOpen(name, list, selectedValue, label);
+      Flux.dispatch({type: ComponentConstants.PICKER_OPEN, label, list, name, value: this.value});
     }
-  }
-
-  onChange(data): void {
-    const {value} = data;
-    const {onChange} = this.props;
-
-    this.updateValue(value, 'change');
-
-    if(onChange) {
-      onChange(value);
-    }
-  }
-
-  onClose(): void {
-    const {onSubmitEditing} = this.props;
-
-    if(onSubmitEditing) {
-      onSubmitEditing(null);
-    }
-  }
-
-  updateValue(value, action): void {
-    const {name} = this.props;
-    const field = {
-      action,
-      name,
-      value
-    };
-
-    this.context.update(field);
-  }
-
-  pickerOpen(name: string, list, value, label: string): Promise<FluxAction> {
-    return Flux.dispatch({type: ComponentConstants.PICKER_OPEN, label, list, name, value});
   }
 
   renderLabel(): JSX.Element {
@@ -166,11 +89,12 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
   }
 
   renderText(): JSX.Element {
-    const value = this.getValue();
+    const {value} = this.state;
     const {disabled, list = [], placeholder} = this.props;
-    const selectedLabel = (head(list.filter((li: SelectOptionType) => li.value === value)) || {label: ''}).label;
+    const selectedLabel = (head(list
+      .filter((li: SelectOptionType) => li.value === value)) || {label: ''}).label;
     const {
-      inputFieldErrorColor = '#D70303',
+      inputFieldDisabledColor = '#D70303',
       inputFieldFont = 'Helvetica',
       inputFieldTextColor = '#000',
       inputFieldTextSize = '14'
@@ -182,7 +106,7 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
     };
 
     // Disabled styles
-    const disabledStyle = disabled ? {color: inputFieldErrorColor} : {};
+    const disabledStyle = disabled ? {color: inputFieldDisabledColor} : {};
 
     if(selectedLabel) {
       return <Text style={[themeStyle, disabledStyle]}>{selectedLabel}</Text>;
@@ -197,21 +121,19 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
     // Theme colors
     const {
       inputFieldBorderColor = '#222',
-      inputFieldDisabledBg = '#333',
-      inputFieldErrorColor = '#D70303'
+      inputFieldDisabledColor = '#ccc'
     } = this.componentTheme;
     const themeStyle: TextStyle = {borderBottomColor: inputFieldBorderColor};
 
     // Disabled styles
     const disabledStyle: ViewStyle = disabled ? {
-      backgroundColor: inputFieldDisabledBg,
-      borderBottomColor: inputFieldErrorColor
+      borderBottomColor: inputFieldDisabledColor
     } : null;
 
     return (
       <View style={[viewStyles.inputBox, containerStyle]}>
         {this.renderLabel()}
-        <TouchableOpacity activeOpacity={0.5} onPress={this.onPress}>
+        <TouchableOpacity activeOpacity={disabled ? 1 : 0.5} onPress={this.onPress}>
           <View style={[viewStyles.textInput, themeStyle, style, disabledStyle]}>
             {this.renderText()}
           </View>
@@ -223,9 +145,10 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
 
 const viewStyles = StyleSheet.create({
   inputBox: {
-    alignSelf: 'stretch',
+    flex: 1,
     flexDirection: 'column',
-    marginBottom: 0
+    marginBottom: 0,
+    overflow: 'hidden'
   },
   textInput: {
     backgroundColor: 'transparent',

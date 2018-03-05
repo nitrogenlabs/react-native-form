@@ -1,8 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {TextInput, TextInputProperties} from 'react-native';
-
-import {FormFieldType} from '../Form/Form';
 import {uiTheme} from '../UITheme';
 
 export interface FormFieldProps extends TextInputProperties {
@@ -14,14 +12,18 @@ export interface FormFieldProps extends TextInputProperties {
   readonly type?: string;
 }
 
-export interface FormFieldState extends Readonly<any> {
-  readonly isFocused: boolean;
+export interface FormFieldState extends Readonly<FormFieldState> {
+  readonly isFocused?: boolean;
+  readonly value?: string;
 }
 
-export class FormField<P extends FormFieldProps, S extends FormFieldState> extends React.PureComponent<P, S> {
+export abstract class FormField<P extends FormFieldProps, S extends FormFieldState> extends React.PureComponent<P, S> {
   private hasSubmit: boolean = false;
   protected componentTheme: any;
-  protected field;
+  inputField;
+  isUpdated: boolean = false;
+  types: string[] = [];
+  value: string = '';
 
   static propTypes: object = {
     ...TextInput.propTypes,
@@ -56,6 +58,7 @@ export class FormField<P extends FormFieldProps, S extends FormFieldState> exten
     super(props as any);
 
     // Methods
+    this.close = this.close.bind(this);
     this.blur = this.blur.bind(this);
     this.focus = this.focus.bind(this);
     this.getError = this.getError.bind(this);
@@ -67,29 +70,52 @@ export class FormField<P extends FormFieldProps, S extends FormFieldState> exten
 
     // Get component theme
     this.componentTheme = {...uiTheme, ...props.theme};
-  }
 
-  componentWillMount(): void {
-    this.setState({
-      isFocused: false
-    });
+    const state: FormFieldState = {
+      isFocused: false,
+      value: props.value
+    };
+    this.state = state as any;
   }
 
   componentDidMount(): void {
-    const {name, onBlur, required, type} = this.props;
-    const types = [type];
+    const {required, type, value} = this.props;
+    this.types = [type];
+    this.value = value;
 
     if(required) {
-      types.push('required');
+      this.types.push('required');
     }
 
-    this.context.add({name, blur: onBlur, types});
+    this.context.add(this);
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
+  close(): void {
+    const {onSubmitEditing} = this.props;
+
+    if(onSubmitEditing) {
+      onSubmitEditing(null);
+    }
+  }
+
+  updateValue(value: string): void {
+    if(this.value !== value) {
+      this.isUpdated = true;
+      this.value = value;
+      this.setState({value});
+    }
   }
 
   onUpdate(value): void {
     if(!this.hasSubmit) {
-      this.updateValue(value, 'change');
+      // Update the value in the form
+      this.context.update('change', this.name, value);
 
+      // Call an update functions
       const {onUpdate} = this.props;
 
       if(onUpdate) {
@@ -99,14 +125,9 @@ export class FormField<P extends FormFieldProps, S extends FormFieldState> exten
   }
 
   focus(): void {
-    if(this.field && this.field.input) {
-      this.field.input.focus();
+    if(this.inputField) {
+      this.inputField.focus();
     }
-  }
-
-  getValue(): string {
-    const {name, value} = this.props;
-    return this.context.values[name] || value;
   }
 
   isValid(): boolean {
@@ -122,8 +143,8 @@ export class FormField<P extends FormFieldProps, S extends FormFieldState> exten
   }
 
   blur(): void {
-    if(this.field && this.field.input) {
-      this.field.input.blur();
+    if(this.inputField) {
+      this.inputField.blur();
     }
   }
 
@@ -133,16 +154,6 @@ export class FormField<P extends FormFieldProps, S extends FormFieldState> exten
     if(this.props.onBlur) {
       this.props.onBlur();
     }
-  }
-
-  updateValue(value: string, actionType: string): void {
-    const field: FormFieldType = {
-      actionType,
-      name: this.props.name,
-      value
-    };
-
-    this.context.update(field);
   }
 
   getError(): string {

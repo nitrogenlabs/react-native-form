@@ -1,4 +1,4 @@
-import {Flux, FluxAction} from 'arkhamjs-native';
+import {Flux, FluxAction} from 'arkhamjs';
 import {isEmpty} from 'lodash';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -20,6 +20,7 @@ import {PickerConfigType, SelectOptionType} from '../types/InputTypes';
 import {uiTheme} from '../UITheme';
 
 export interface SelectPickerProps {
+  readonly closeText?: string;
   readonly overlayStyle?: ViewStyle;
   readonly pickerStyle?: ViewStyle;
   readonly theme?: any;
@@ -41,12 +42,14 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
   private componentTheme: any;
 
   static propTypes: object = {
+    closeText: PropTypes.string,
     overlayStyle: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
     pickerStyle: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
     theme: PropTypes.object
   };
 
   static defaultProps = {
+    closeText: 'Done',
     theme: {}
   };
 
@@ -76,7 +79,7 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
     this.componentTheme = {...uiTheme, ...props.theme};
   }
 
-  componentWillMount(): void {
+  componentDidMount(): void {
     Flux.on(ComponentConstants.PICKER_OPEN, this.openPicker);
   }
 
@@ -115,8 +118,6 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
       name,
       selectedValue
     } = this.state;
-    this.pickerChange(name, selectedValue);
-    this.pickerClose(name);
 
     Animated.parallel([
       Animated.timing(bgOpacityValue, {
@@ -135,7 +136,10 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
         useNativeDriver: true
       })
     ]).start(() => {
-      this.setState({name: '', label: '', showPicker: false});
+      this.setState({name: '', label: '', showPicker: false}, async () => {
+        await this.pickerChange(name, selectedValue);
+        await this.pickerClose(name);
+      });
     });
   }
 
@@ -164,14 +168,12 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
     this.setState({showPicker: true});
   }
 
-  async pickerChange(name: string, value): Promise<FluxAction> {
-    await Flux.dispatch({type: ComponentConstants.PICKER_CHANGE, name, value});
-    return Flux.dispatch({type: `${ComponentConstants.PICKER_CHANGE}${name}`, value});
+  pickerChange(name: string, value): Promise<FluxAction> {
+    return Flux.dispatch({type: ComponentConstants.PICKER_CHANGE, name, value});
   }
 
-  async pickerClose(name: string): Promise<FluxAction> {
-    await Flux.dispatch({type: ComponentConstants.PICKER_CLOSE});
-    return Flux.dispatch({type: `${ComponentConstants.PICKER_CLOSE}${name}`});
+  pickerClose(name: string): Promise<FluxAction> {
+    return Flux.dispatch({type: ComponentConstants.PICKER_CLOSE, name});
   }
 
   onChange(selectedValue): void {
@@ -190,7 +192,6 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
         selectPickerLabelColor = '#fff',
         selectPickerLabelSize = 14
       } = this.componentTheme;
-
       const labelStyle: TextStyle = {
         color: selectPickerLabelColor,
         fontFamily: selectPickerFont,
@@ -212,9 +213,14 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
   }
 
   render(): JSX.Element {
-    const {bgOpacityValue, pickerHeight, pickerYValue, showPicker} = this.state;
-    const pickerStyle = {height: pickerHeight, transform: [{translateY: pickerYValue}]};
-    const {selectedValue} = this.state;
+    const {closeText} = this.props;
+    const {bgOpacityValue, pickerHeight, pickerYValue, selectedValue, showPicker} = this.state;
+    const {selectPickerSelectorBg} = this.componentTheme;
+    const pickerStyle = {
+      backgroundColor: selectPickerSelectorBg,
+      height: pickerHeight,
+      transform: [{translateY: pickerYValue}]
+    };
 
     if(showPicker) {
       return (
@@ -230,8 +236,9 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
                   size="sm"
                   width={60}
                   style={viewStyles.closeBtn}
-                  onPress={this.closePicker}>
-                  Done
+                  onPress={this.closePicker}
+                  theme={this.componentTheme}>
+                  {closeText}
                 </Button>
               </View>
               <Picker

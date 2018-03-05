@@ -1,5 +1,5 @@
-import {Flux, FluxAction} from 'arkhamjs-native';
-import moment from 'moment-timezone';
+import {Flux, FluxAction} from 'arkhamjs';
+import {DateTime} from 'luxon';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {
@@ -19,21 +19,22 @@ import {ComponentConstants} from '../constants/ComponentConstants';
 import {uiTheme} from '../UITheme';
 
 export interface DateTimePickerProps extends ViewProperties {
+  readonly closeText?: string;
   readonly date?: Date;
   readonly maximumDate?: Date;
   readonly minimumDate?: Date;
-  readonly minuteInterval?: number;
+  readonly minuteInterval?: 1 | 12 | 30 | 20 | 15 | 5 | 6 | 10 | 3 | 2 | 4;
   readonly mode?: 'date' | 'time' | 'datetime';
   readonly onDateChange?: (newDate: Date) => void;
-  readonly timeZoneOffsetInMinutes?: number;
   readonly theme: any;
+  readonly timeZoneOffsetInMinutes?: number;
 }
 
 export interface DateTimePickerState {
   readonly bgOpacityValue: Animated.Value;
   readonly label?: string;
   readonly minimumDate?: Date;
-  readonly minuteInterval?: number;
+  readonly minuteInterval?: 1 | 12 | 30 | 20 | 15 | 5 | 6 | 10 | 3 | 2 | 4;
   readonly mode?: 'date' | 'time' | 'datetime';
   readonly name?: string;
   readonly pickerHeight: number;
@@ -41,19 +42,26 @@ export interface DateTimePickerState {
   readonly pickerYValue: Animated.Value;
   readonly selectedValue?: Date;
   readonly showPicker?: boolean;
+  readonly timezone: string;
 }
 
 export class DateTimePicker extends React.PureComponent<DateTimePickerProps, DateTimePickerState> {
   private componentTheme: any;
 
   static propTypes = {
+    closeText: PropTypes.string,
     date: PropTypes.object,
+    maximumDate: PropTypes.object,
+    minimumDate: PropTypes.object,
     minuteInterval: PropTypes.number,
     mode: PropTypes.string,
-    theme: PropTypes.object
+    onDateChange: PropTypes.func,
+    theme: PropTypes.object,
+    timeZoneOffsetInMinutes: PropTypes.number
   };
 
   static defaultProps = {
+    closeText: 'Done',
     date: new Date(),
     minuteInterval: 1,
     mode: 'datetime',
@@ -81,14 +89,15 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
       pickerOpacityValue: new Animated.Value(0),
       pickerYValue: new Animated.Value(250),
       selectedValue,
-      showPicker: false
+      showPicker: false,
+      timezone: DateTime.local().toFormat('z')
     };
 
     // Get component theme
     this.componentTheme = {...uiTheme, ...props.theme};
   }
 
-  componentWillMount(): void {
+  componentDidMount(): void {
     Flux.on(ComponentConstants.DATETIME_OPEN, this.openPicker);
   }
 
@@ -107,6 +116,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
       minimumDate,
       mode = defaultMode,
       name,
+      timezone,
       value: selectedValue = new Date()
     } = data;
 
@@ -119,11 +129,12 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
       mode,
       name,
       selectedValue,
-      showPicker: true
+      showPicker: true,
+      timezone
     });
   }
 
-  closePicker(): void {
+  async closePicker(): Promise<void> {
     const {
       bgOpacityValue,
       pickerHeight,
@@ -132,7 +143,10 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
       name,
       selectedValue = new Date()
     } = this.state;
-    const value: number = +(moment(selectedValue).second(0).millisecond(0).format('x'));
+    const value: number = DateTime.fromJSDate(selectedValue).set({second: 0, millisecond: 0}).ts;
+
+    await this.pickerChange(name, value);
+    await this.pickerClose(name);
 
     Animated.parallel([
       Animated.timing(bgOpacityValue, {
@@ -151,10 +165,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
         useNativeDriver: true
       })
     ]).start(() => {
-      this.setState({name: '', label: '', selectedValue: new Date(value), showPicker: false}, () => {
-        this.pickerChange(name, value);
-        this.pickerClose(name);
-      });
+      this.setState({name: '', label: '', selectedValue: new Date(value), showPicker: false});
     });
 
   }
@@ -185,18 +196,16 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
   }
 
   async pickerChange(name: string, value): Promise<FluxAction> {
-    await Flux.dispatch({type: ComponentConstants.PICKER_CHANGE, name, value});
-    return Flux.dispatch({type: `${ComponentConstants.PICKER_CHANGE}${name}`, value});
+    return Flux.dispatch({type: ComponentConstants.PICKER_CHANGE, name, value});
   }
 
   async pickerClose(name: string): Promise<FluxAction> {
-    await Flux.dispatch({type: ComponentConstants.PICKER_CLOSE});
-    return Flux.dispatch({type: `${ComponentConstants.PICKER_CLOSE}${name}`});
+    return Flux.dispatch({type: ComponentConstants.PICKER_CLOSE, name});
   }
 
   onChange(selectedValue: Date = new Date()): void {
     const {name} = this.state;
-    const dateTime: number = +(moment(selectedValue).format('x'));
+    const dateTime: number = DateTime.fromJSDate(selectedValue).ts;
     this.pickerChange(name, dateTime);
     this.setState({selectedValue});
   }
@@ -223,6 +232,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
   }
 
   render(): JSX.Element {
+    const {closeText} = this.props;
     const {
       bgOpacityValue,
       minimumDate,
@@ -230,11 +240,19 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
       mode,
       pickerHeight,
       pickerYValue,
-      showPicker
+      selectedValue,
+      showPicker,
+      timezone
     } = this.state;
-    const pickerStyle = {height: pickerHeight, transform: [{translateY: pickerYValue}]};
-    const {selectedValue} = this.state;
-    const selectedDate: Date = moment(+(selectedValue)).toDate();
+    const {selectPickerSelectorBg} = this.componentTheme;
+    const pickerStyle = {
+      backgroundColor: selectPickerSelectorBg,
+      height: pickerHeight,
+      transform: [{translateY: pickerYValue}]
+    };
+    const selectedDate: Date = DateTime.fromJSDate(selectedValue).toJSDate();
+    const offsetInMin: number = +(DateTime.local().setZone(timezone).toFormat('Z')) * 60;
+    const {locale} = DateTime.local();
 
     if(showPicker) {
       return (
@@ -250,16 +268,19 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
                   size="sm"
                   width={60}
                   style={viewStyles.closeBtn}
-                  onPress={this.closePicker}>
-                  Done
+                  onPress={this.closePicker}
+                  theme={this.componentTheme}>
+                  {closeText}
                 </Button>
               </View>
               <DatePickerIOS style={viewStyles.picker}
                 date={selectedDate}
+                locale={locale}
                 minimumDate={minimumDate}
                 minuteInterval={minuteInterval}
                 mode={mode}
-                onDateChange={this.onChange} />
+                onDateChange={this.onChange}
+                timeZoneOffsetInMinutes={offsetInMin} />
             </View>
           </Animated.View>
         </View>

@@ -1,5 +1,11 @@
 import {ViewStyle} from 'react-native';
 
+declare module 'luxon' {
+  interface DateTime {
+    readonly ts: number;
+  }
+}
+
 export interface DateTimeConfigType {
   name: string;
   value: any;

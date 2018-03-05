@@ -2,25 +2,36 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 import {TextField} from '../TextField/TextField';
+import {uiTheme} from '../UITheme';
+
+export type AutoCapitalizeType = 'none' | 'sentences' | 'words' | 'characters';
+export type KeyboardType = 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'ascii-capable' |
+  'numbers-and-punctuation' | 'url' | 'name-phone-pad' | 'decimal-pad' | 'twitter' | 'web-search';
+export type ReturnKeyType = 'done' | 'go' | 'next' | 'search' | 'send' | 'none' | 'previous' | 'default' |
+  'emergency-call' | 'google' | 'join' | 'route' | 'yahoo';
 
 export interface InputFieldProps extends FormFieldProps {
-  readonly autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  readonly autoCapitalize?: AutoCapitalizeType;
   readonly autoCorrect?: boolean;
   readonly autoFocus?: boolean;
+  readonly borderColor?: string;
   readonly clearTextOnFocus?: boolean;
   readonly direction?: string;
+  readonly errorColor?: string;
   readonly help?: string;
-  readonly keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'ascii-capable' |
-  'numbers-and-punctuation' | 'url' | 'name-phone-pad' | 'decimal-pad' | 'twitter' | 'web-search';
+  readonly keyboardType?: KeyboardType;
   readonly label: string;
+  readonly labelColor?: string;
   readonly multiline?: boolean;
   readonly name: string;
   readonly prefix?: string;
-  readonly returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send' | 'none' | 'previous' | 'default' |
-  'emergency-call' | 'google' | 'join' | 'route' | 'yahoo';
+  readonly returnKeyType?: ReturnKeyType;
   readonly secureTextEntry?: boolean;
+  readonly selectionColor?: string;
   readonly softMax?: number;
   readonly suffix?: string;
+  readonly textColor?: string;
+  readonly tintColor?: string;
 }
 
 export class InputField extends FormField<InputFieldProps, FormFieldState> {
@@ -29,17 +40,23 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
     autoCapitalize: PropTypes.string,
     autoCorrect: PropTypes.bool,
     autoFocus: PropTypes.bool,
+    borderColor: PropTypes.string,
     clearTextOnFocus: PropTypes.bool,
     direction: PropTypes.string,
+    errorColor: PropTypes.string,
     help: PropTypes.string,
     keyboardType: PropTypes.string,
     label: PropTypes.string,
+    labelColor: PropTypes.string,
     multiline: PropTypes.bool,
     prefix: PropTypes.string,
     returnKeyType: PropTypes.string,
     secureTextEntry: PropTypes.bool,
+    selectionColor: PropTypes.string,
     softMax: PropTypes.number,
     suffix: PropTypes.string,
+    textColor: PropTypes.string,
+    tintColor: PropTypes.string,
     type: PropTypes.string
   };
 
@@ -60,82 +77,105 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
 
   constructor(props: InputFieldProps) {
     super(props);
+
+    // Get component theme
+    this.componentTheme = {...uiTheme, ...props.theme};
+  }
+
+  updateValue(value): void {
+    if(this.value !== value) {
+      this.isUpdated = true;
+      this.value = value === null || value === undefined ? '' : value.toString();
+      this.setState({value: this.value});
+    }
   }
 
   render(): JSX.Element {
     const {
+      autoCapitalize,
+      autoCorrect,
       autoFocus,
+      borderColor,
+      clearTextOnFocus,
       disabled,
       editable,
+      errorColor,
       help,
+      keyboardType,
       label,
+      labelColor,
       maxLength,
-      name,
+      multiline,
       onSubmitEditing,
       prefix,
       returnKeyType,
+      secureTextEntry,
+      selectionColor,
       softMax,
+      style,
       suffix,
+      theme,
+      textColor,
+      tintColor,
       type
     } = this.props;
 
-    let {
-      autoCapitalize,
-      autoCorrect,
-      clearTextOnFocus,
-      keyboardType,
-      multiline,
-      secureTextEntry
-    } = this.props;
+    const {value} = this.state;
+
+    let updatedAutoCapitalize: AutoCapitalizeType = autoCapitalize;
+    let updatedAutoCorrect: boolean = autoCorrect;
+    let updatedClearTextOnFocus: boolean = clearTextOnFocus;
+    let updatedKeyboardType: KeyboardType = keyboardType;
+    let updatedMultiline: boolean = multiline;
+    let updatedSecureTextEntry: boolean = secureTextEntry;
 
     switch(type) {
       case 'password':
-        autoCapitalize = 'none';
-        autoCorrect = false;
-        secureTextEntry = true;
-        clearTextOnFocus = true;
+        updatedAutoCapitalize = 'none';
+        updatedAutoCorrect = false;
+        updatedSecureTextEntry = true;
+        updatedClearTextOnFocus = true;
         break;
       case 'email':
-        autoCapitalize = 'none';
-        autoCorrect = false;
-        keyboardType = 'email-address';
+        updatedAutoCapitalize = 'none';
+        updatedAutoCorrect = false;
+        updatedKeyboardType = 'email-address';
         break;
       case 'float':
-        keyboardType = 'decimal-pad';
+        updatedKeyboardType = 'decimal-pad';
         break;
       case 'numeric':
-        keyboardType = 'numeric';
+        updatedKeyboardType = 'numeric';
         break;
       case 'phone':
-        keyboardType = 'phone-pad';
+        updatedKeyboardType = 'phone-pad';
         break;
       case 'search':
-        keyboardType = 'web-search';
+        updatedKeyboardType = 'web-search';
         break;
       case 'textarea':
-        autoCapitalize = 'sentences';
-        autoCorrect = true;
-        multiline = true;
+        updatedAutoCapitalize = 'sentences';
+        updatedAutoCorrect = true;
+        updatedMultiline = true;
         break;
       case 'url':
-        keyboardType = 'url';
+        updatedKeyboardType = 'url';
         break;
       case 'username':
-        autoCapitalize = 'none';
-        autoCorrect = false;
+        updatedAutoCapitalize = 'none';
+        updatedAutoCorrect = false;
         break;
       default:
         break;
     }
 
-    // Value
-    const value = (this.context.values[name] || '').toString();
-
     // Theme colors
     const {
+      inputFieldBorderColor,
       inputFieldErrorColor,
       inputFieldFont,
       inputFieldKeyboardAppearance,
+      inputFieldLabelColor,
       inputFieldLabelSize,
       inputFieldSelectionColor,
       inputFieldTextColor,
@@ -145,40 +185,43 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
     return (
       <TextField
         animationDuration={150}
-        autoCapitalize={autoCapitalize}
-        autoCorrect={autoCorrect}
+        autoCapitalize={updatedAutoCapitalize}
+        autoCorrect={updatedAutoCorrect}
         autoFocus={autoFocus}
-        baseColor={inputFieldTextColor}
+        baseColor={textColor || inputFieldTextColor}
+        borderColor={borderColor || inputFieldBorderColor}
         blurOnSubmit={false}
-        clearTextOnFocus={clearTextOnFocus}
+        clearTextOnFocus={updatedClearTextOnFocus}
         clearButtonMode="while-editing"
         characterRestriction={softMax}
         disabled={disabled}
         editable={!disabled && editable}
         enablesReturnKeyAutomatically={true}
-        errorColor={inputFieldErrorColor}
+        errorColor={errorColor || inputFieldErrorColor}
         fontFamily={inputFieldFont}
         fontSize={inputFieldTextSize}
         help={help}
         keyboardAppearance={inputFieldKeyboardAppearance}
-        keyboardType={keyboardType}
+        keyboardType={updatedKeyboardType}
         label={label}
+        labelColor={labelColor || inputFieldLabelColor}
         labelFontSize={inputFieldLabelSize}
         maxLength={maxLength}
-        multiline={multiline}
+        multiline={updatedMultiline}
         onBlur={this.onBlur}
         onChangeText={this.onUpdate}
         onFocus={this.onFocus}
         onSubmitEditing={onSubmitEditing}
         prefix={prefix}
         returnKeyType={returnKeyType}
-        ref={(r) => this.field = r}
-        secureTextEntry={secureTextEntry}
-        selectionColor={inputFieldSelectionColor}
-        style={{fontFamily: inputFieldFont}}
+        ref={(r) => this.inputField = r}
+        secureTextEntry={updatedSecureTextEntry}
+        selectionColor={selectionColor || inputFieldSelectionColor}
+        style={style}
         suffix={suffix}
-        textColor={inputFieldTextColor}
-        tintColor={inputFieldSelectionColor}
+        textColor={textColor || inputFieldTextColor}
+        theme={theme}
+        tintColor={tintColor || inputFieldSelectionColor}
         value={value} />
     );
   }

@@ -10,7 +10,7 @@ export const uiTheme = {
 
   inputFieldBorderColor: 'rgba(50, 50, 50, 0.5)',
   inputFieldBorderWidth: 1,
-  inputFieldDisabledBg: '#333',
+  inputFieldDisabledColor: '#333',
   inputFieldErrorColor: '#D70303',
   inputFieldFont: 'Helvetica',
   inputFieldHelpSize: 12,
@@ -29,7 +29,7 @@ export const uiTheme = {
   selectPickerLabelColor: '#fff',
   selectPickerLabelSize: 14,
   selectPickerOverlayBg: 'rgba(0, 0, 0, 0.9)',
-  selectPickerSelectorBg: 30,
+  selectPickerSelectorBg: '#fff',
 
   tagAvailableBorderColor: 'rgba(255, 255, 255, 0.3)',
   tagAvailableTextColor: '#fff',

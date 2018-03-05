@@ -239,17 +239,17 @@ export class Button extends React.PureComponent<ButtonProps, object> {
 
   getGhostStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {labelColor, size} = this.props;
-    const {buttonPrimaryBgColor, buttonPrimaryLabelColor} = this.componentTheme;
+    const {buttonFont, buttonPrimaryBgColor} = this.componentTheme;
 
     button = {
       ...button,
       backgroundColor: 'transparent',
-      borderColor: buttonPrimaryBgColor,
-      borderRadius: 4
+      borderColor: labelColor || buttonPrimaryBgColor
     };
 
     label = {
-      color: labelColor || buttonPrimaryLabelColor,
+      color: labelColor || buttonPrimaryBgColor,
+      fontFamily: buttonFont,
       fontWeight: '500'
     };
 

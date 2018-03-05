@@ -36,7 +36,7 @@ export class Helper extends React.PureComponent<HelperProps, object> {
 const viewStyles = StyleSheet.create({
   helper: {
     ...StyleSheet.absoluteFillObject,
-    paddingVertical: 4
+    paddingVertical: 0
   },
   text: {
     backgroundColor: 'transparent'
