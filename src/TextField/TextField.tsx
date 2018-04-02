@@ -1,14 +1,7 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import {
-  Animated,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TextInputProperties,
-  TextStyle,
-  View, ViewStyle
-} from 'react-native';
+import {Animated, Platform, StyleSheet, TextInput, TextInputProperties, TextStyle, View, ViewStyle} from 'react-native';
+
 import {uiTheme} from '../UITheme';
 import {Affix} from './Affix';
 import {Counter} from './Counter';
@@ -415,16 +408,25 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     const count: number = inputValue.length;
     const restricted: boolean = limit < count;
 
-    const borderBottomColor = restricted ?
-      errorColor :
-      focus.interpolate({
-        inputRange: [-1, 0, 1],
-        outputRange: [errorColor, borderColor, tintColor]
-      });
+    let borderBottomColor;
+    let borderBottomWidth;
+    const hasBorder: boolean = borderColor !== 'transparent';
 
-    const borderBottomWidth = restricted ?
-      inputFieldBorderWidth :
-      focus.interpolate({inputRange: [-1, 0, 1], outputRange: [2, StyleSheet.hairlineWidth, 2]});
+    if(hasBorder) {
+      borderBottomColor = restricted ?
+        errorColor :
+        focus.interpolate({
+          inputRange: [-1, 0, 1],
+          outputRange: [errorColor, borderColor, tintColor]
+        });
+
+      borderBottomWidth = restricted ?
+        inputFieldBorderWidth :
+        focus.interpolate({inputRange: [-1, 0, 1], outputRange: [2, StyleSheet.hairlineWidth, 2]});
+    } else {
+      borderBottomColor = 'transparent';
+      borderBottomWidth = 0;
+    }
 
     const updateContainerStyle = {
       borderBottomColor,
@@ -529,8 +531,6 @@ const viewStyles = StyleSheet.create({
   },
   textField: {
     backgroundColor: 'transparent',
-    flexDirection: 'column',
-    marginBottom: 3,
-    paddingTop: 32
+    flexDirection: 'column'
   }
 });
