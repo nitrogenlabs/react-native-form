@@ -113,9 +113,10 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
 
   onFocus(event): void {
     this.setState({isFocused: true});
+    const {onFocus} = this.props;
 
-    if (this.props.onFocus) {
-      this.props.onFocus(event);
+    if (onFocus) {
+      onFocus(event);
     }
   }
 

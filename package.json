@@ -1,6 +1,6 @@
 {
   "name": "@nlabs/react-native-form",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "React Native form components",
   "license": "MIT",
   "main": "index.js",
@@ -33,8 +33,8 @@
   "scripts": {
     "compile": "NODE_ENV=production tsc",
     "lint": "tslint -c ./tslint.json './src/**/*.{ts,tsx}'",
-    "prepublishOnly": "NODE_ENV=production npm run lint && npm run compile",
-    "pretest": "npm run lint",
+    "prepublishOnly": "NODE_ENV=production yarn lint && yarn compile",
+    "pretest": "yarn lint",
     "reset": "rm -rf node_modules yarn.lock && yarn",
     "test": "NODE_ENV=test jest",
     "update": "yarn upgrade-interactive --latest",
