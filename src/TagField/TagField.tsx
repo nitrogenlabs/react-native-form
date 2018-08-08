@@ -1,15 +1,7 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle
-} from 'react-native';
-import {default as Ionicons} from 'react-native-vector-icons/Ionicons';
+import {ScrollView, StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 import {TextField} from '../TextField/TextField';
 import {SelectOptionType} from '../types/InputTypes';
@@ -36,20 +28,6 @@ export interface TagFieldState extends FormFieldState {
 }
 
 export class TagField extends FormField<TagFieldProps, TagFieldState> {
-  static propTypes: object = {
-    animationDuration: PropTypes.number,
-    help: PropTypes.string,
-    inputStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    label: PropTypes.string,
-    labelStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    limit: PropTypes.number,
-    name: PropTypes.string.isRequired,
-    onUpdate: PropTypes.func,
-    showSearch: PropTypes.bool,
-    tags: PropTypes.array,
-    theme: PropTypes.object
-  };
-
   static defaultProps: object = {
     animationDuration: 150,
     label: 'Tags',
@@ -87,21 +65,21 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     this.componentTheme = {...uiTheme, ...props.theme};
   }
 
-  onBlur(): void {
+  onBlur(event): void {
     const {onBlur} = this.props;
 
-    if(typeof onBlur === 'function') {
-      onBlur();
+    if (typeof onBlur === 'function') {
+      onBlur(event);
     }
 
     this.setState({isFocused: false});
   }
 
-  onFocus(): void {
+  onFocus(event): void {
     const {onFocus} = this.props;
 
-    if(typeof onFocus === 'function') {
-      onFocus();
+    if (typeof onFocus === 'function') {
+      onFocus(event);
     }
 
     this.setState({isFocused: true});
@@ -112,7 +90,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     const formatQuery: string = this.formatTag(text);
     const item: SelectOptionType = this.getSelectedItem(formatQuery);
 
-    if(item) {
+    if (item) {
       this.addTag(item);
     }
 
@@ -126,7 +104,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
   onUpdateTags(): void {
     const {onUpdate} = this.props;
 
-    if(onUpdate) {
+    if (onUpdate) {
       const {selectedTags} = this.state;
       onUpdate(selectedTags);
     }
@@ -166,7 +144,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     const isNotSelected: boolean = selectedTags
       .findIndex((existingItem: SelectOptionType) => existingItem.label === query) < 0;
 
-    if(isNotSelected) {
+    if (isNotSelected) {
       // If not already selected, see if it is an existing tag.
       let item: SelectOptionType = tags.find((tagItem: SelectOptionType) => {
         const {label = ''} = tagItem;
@@ -174,7 +152,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
       });
 
       // If not existent, create a new tag.
-      if(!item) {
+      if (!item) {
         item = {label: query, value: ''};
       }
 
@@ -215,11 +193,11 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     const {showSearch} = this.props;
     const {searchFilterTags} = this.state;
 
-    if(showSearch && searchFilterTags.length) {
+    if (showSearch && searchFilterTags.length) {
       // Only use the tags that have not already been selected.
       const availableTags: SelectOptionType[] = this.getAvailableItems();
 
-      if(availableTags.length) {
+      if (availableTags.length) {
         const {
           inputFieldSelectionColor,
           inputFieldTextSize,
@@ -299,7 +277,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
       height: tagSelectedCloseTextSize
     };
 
-    if(selectedTags.length) {
+    if (selectedTags.length) {
       const selectedElements = selectedTags.map((item: SelectOptionType) => (
         <View
           key={item.label}

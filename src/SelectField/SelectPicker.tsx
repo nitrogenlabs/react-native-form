@@ -1,6 +1,5 @@
-import {Flux, FluxAction} from 'arkhamjs';
-import {isEmpty} from 'lodash';
-import * as PropTypes from 'prop-types';
+import {Flux, FluxAction} from '@nlabs/arkhamjs';
+import isEmpty from 'lodash/isEmpty';
 import * as React from 'react';
 import {
   Animated,
@@ -14,6 +13,7 @@ import {
   View,
   ViewStyle
 } from 'react-native';
+
 import {Button} from '../Button/Button';
 import {ComponentConstants} from '../constants/ComponentConstants';
 import {PickerConfigType, SelectOptionType} from '../types/InputTypes';
@@ -40,13 +40,6 @@ export interface SelectPickerState {
 
 export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectPickerState> {
   private componentTheme: any;
-
-  static propTypes: object = {
-    closeText: PropTypes.string,
-    overlayStyle: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
-    pickerStyle: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
-    theme: PropTypes.object
-  };
 
   static defaultProps = {
     closeText: 'Done',
@@ -97,11 +90,11 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
 
     let selectedValue: string = value;
 
-    if(!selectedValue && !isEmpty(list[0]) && list[0].value !== undefined) {
+    if (!selectedValue && !isEmpty(list[0]) && list[0].value !== undefined) {
       selectedValue = list[0].value;
     }
 
-    if(list.length) {
+    if (list.length) {
       Keyboard.dismiss();
       this.setState({label, list, name, selectedValue, showPicker: true});
     } else {
@@ -186,7 +179,7 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
     const {label} = this.state;
     let labelElement = null;
 
-    if(label) {
+    if (label) {
       const {
         selectPickerFont = 'Helvetica',
         selectPickerLabelColor = '#fff',
@@ -222,7 +215,7 @@ export class SelectPicker extends React.PureComponent<SelectPickerProps, SelectP
       transform: [{translateY: pickerYValue}]
     };
 
-    if(showPicker) {
+    if (showPicker) {
       return (
         <View key="container" style={viewStyles.container} onLayout={this.animatePicker}>
           <TouchableWithoutFeedback key="overlay" onPress={this.closePicker}>

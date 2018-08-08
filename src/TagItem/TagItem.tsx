@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
@@ -12,12 +11,6 @@ export interface TagItemProps {
 
 export class TagItem extends React.PureComponent<TagItemProps, {}> {
   private componentTheme: any;
-
-  static propTypes: object = {
-    name: PropTypes.string,
-    onPress: PropTypes.func,
-    theme: PropTypes.object
-  };
 
   constructor(props: TagItemProps) {
     super(props);

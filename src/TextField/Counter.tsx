@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 
 import {
@@ -17,14 +16,6 @@ export interface CounterProps {
 }
 
 export class Counter extends React.PureComponent<CounterProps, object> {
-  static propTypes: object = {
-    baseColor: PropTypes.string.isRequired,
-    count: PropTypes.number.isRequired,
-    errorColor: PropTypes.string.isRequired,
-    fontSize: PropTypes.number,
-    limit: PropTypes.number
-  };
-
   static defaultProps: object = {
     fontSize: 12
   };

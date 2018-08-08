@@ -1,6 +1,6 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import {TextInput, TextInputProperties} from 'react-native';
+import {TextInputProperties} from 'react-native';
+
 import {uiTheme} from '../UITheme';
 
 export interface FormFieldProps extends TextInputProperties {
@@ -25,33 +25,10 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
   types: string[] = [];
   value: string = '';
 
-  static propTypes: object = {
-    ...TextInput.propTypes,
-    disabled: PropTypes.bool,
-    name: PropTypes.string.isRequired,
-    onBlur: PropTypes.func,
-    onChange: PropTypes.func,
-    onFocus: PropTypes.func,
-    onSubmitEditing: PropTypes.func,
-    onUpdate: PropTypes.func,
-    required: PropTypes.bool,
-    theme: PropTypes.object,
-    type: PropTypes.string,
-    value: PropTypes.string
-  };
-
   static defaultProps: object = {
     disabled: false,
     required: false,
     value: ''
-  };
-
-  static contextTypes: object = {
-    add: PropTypes.func.isRequired,
-    errors: PropTypes.object,
-    update: PropTypes.func.isRequired,
-    validate: PropTypes.func,
-    values: PropTypes.object.isRequired
   };
 
   constructor(props: FormFieldProps) {
@@ -83,7 +60,7 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     this.types = [type];
     this.value = value;
 
-    if(required) {
+    if (required) {
       this.types.push('required');
     }
 
@@ -97,13 +74,13 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
   close(): void {
     const {onSubmitEditing} = this.props;
 
-    if(onSubmitEditing) {
+    if (onSubmitEditing) {
       onSubmitEditing(null);
     }
   }
 
   updateValue(value: string): void {
-    if(this.value !== value) {
+    if (this.value !== value) {
       this.isUpdated = true;
       this.value = value;
       this.setState({value});
@@ -111,21 +88,21 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
   }
 
   onUpdate(value): void {
-    if(!this.hasSubmit) {
+    if (!this.hasSubmit) {
       // Update the value in the form
       this.context.update('change', this.name, value);
 
       // Call an update functions
       const {onUpdate} = this.props;
 
-      if(onUpdate) {
+      if (onUpdate) {
         onUpdate(value);
       }
     }
   }
 
   focus(): void {
-    if(this.inputField) {
+    if (this.inputField) {
       this.inputField.focus();
     }
   }
@@ -134,25 +111,25 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     return !(this.context.errors[this.props.name] || []).length;
   }
 
-  onFocus(): void {
+  onFocus(event): void {
     this.setState({isFocused: true});
 
-    if(this.props.onFocus) {
-      this.props.onFocus();
+    if (this.props.onFocus) {
+      this.props.onFocus(event);
     }
   }
 
   blur(): void {
-    if(this.inputField) {
+    if (this.inputField) {
       this.inputField.blur();
     }
   }
 
-  onBlur(): void {
+  onBlur(event): void {
     this.setState({isFocused: false});
 
-    if(this.props.onBlur) {
-      this.props.onBlur();
+    if (this.props.onBlur) {
+      this.props.onBlur(event);
     }
   }
 
@@ -162,12 +139,12 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     return list[0];
   }
 
-  onSubmitEditing(event: {nativeEvent: {text: string}}): void {
+  onSubmitEditing(event): void {
     this.hasSubmit = true;
     this.blur();
     const {onSubmitEditing} = this.props;
 
-    if(onSubmitEditing) {
+    if (onSubmitEditing) {
       onSubmitEditing(event);
     }
   }

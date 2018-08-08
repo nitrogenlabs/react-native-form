@@ -1,5 +1,5 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
+
 import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 import {TextField} from '../TextField/TextField';
 import {uiTheme} from '../UITheme';
@@ -16,7 +16,6 @@ export interface InputFieldProps extends FormFieldProps {
   readonly autoFocus?: boolean;
   readonly borderColor?: string;
   readonly clearTextOnFocus?: boolean;
-  readonly direction?: string;
   readonly errorColor?: string;
   readonly help?: string;
   readonly keyboardType?: KeyboardType;
@@ -35,31 +34,6 @@ export interface InputFieldProps extends FormFieldProps {
 }
 
 export class InputField extends FormField<InputFieldProps, FormFieldState> {
-  static propTypes: object = {
-    ...FormField.propTypes,
-    autoCapitalize: PropTypes.string,
-    autoCorrect: PropTypes.bool,
-    autoFocus: PropTypes.bool,
-    borderColor: PropTypes.string,
-    clearTextOnFocus: PropTypes.bool,
-    direction: PropTypes.string,
-    errorColor: PropTypes.string,
-    help: PropTypes.string,
-    keyboardType: PropTypes.string,
-    label: PropTypes.string,
-    labelColor: PropTypes.string,
-    multiline: PropTypes.bool,
-    prefix: PropTypes.string,
-    returnKeyType: PropTypes.string,
-    secureTextEntry: PropTypes.bool,
-    selectionColor: PropTypes.string,
-    softMax: PropTypes.number,
-    suffix: PropTypes.string,
-    textColor: PropTypes.string,
-    tintColor: PropTypes.string,
-    type: PropTypes.string
-  };
-
   static defaultProps: object = {
     autoCapitalize: 'none',
     autoCorrect: false,
@@ -83,7 +57,7 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
   }
 
   updateValue(value): void {
-    if(this.value !== value) {
+    if (this.value !== value) {
       this.isUpdated = true;
       this.value = value === null || value === undefined ? '' : value.toString();
       this.setState({value: this.value});
@@ -129,7 +103,7 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
     let updatedMultiline: boolean = multiline;
     let updatedSecureTextEntry: boolean = secureTextEntry;
 
-    switch(type) {
+    switch (type) {
       case 'password':
         updatedAutoCapitalize = 'none';
         updatedAutoCorrect = false;

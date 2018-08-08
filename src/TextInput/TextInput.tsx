@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {TextInput as RNTextInput, TextInputProperties} from 'react-native';
 
@@ -15,13 +14,6 @@ export interface TextFieldProps extends TextInputProperties {
 }
 
 export class TextInput extends FormField<TextFieldProps, FormFieldState> {
-  static propTypes: object = {
-    ...TextInput.propTypes,
-    disabled: PropTypes.bool,
-    theme: PropTypes.object,
-    type: PropTypes.string
-  };
-
   static defaultProps: object = {
     autoCapitalize: 'none',
     autoCorrect: false,

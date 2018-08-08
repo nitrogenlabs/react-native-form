@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 
 import {
@@ -15,11 +14,6 @@ export interface HelperProps {
 export class Helper extends React.PureComponent<HelperProps, object> {
   static defaultProps = {
     numberOfLines: 1
-  };
-
-  static propTypes = {
-    children: PropTypes.node,
-    style: Animated.Text.propTypes.style
   };
 
   render(): JSX.Element {

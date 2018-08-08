@@ -1,6 +1,5 @@
-import {Flux, FluxAction} from 'arkhamjs';
+import {Flux, FluxAction} from '@nlabs/arkhamjs';
 import {DateTime} from 'luxon';
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {
   Animated,
@@ -14,6 +13,7 @@ import {
   View,
   ViewProperties
 } from 'react-native';
+
 import {Button} from '../Button/Button';
 import {ComponentConstants} from '../constants/ComponentConstants';
 import {uiTheme} from '../UITheme';
@@ -47,18 +47,6 @@ export interface DateTimePickerState {
 
 export class DateTimePicker extends React.PureComponent<DateTimePickerProps, DateTimePickerState> {
   private componentTheme: any;
-
-  static propTypes = {
-    closeText: PropTypes.string,
-    date: PropTypes.object,
-    maximumDate: PropTypes.object,
-    minimumDate: PropTypes.object,
-    minuteInterval: PropTypes.number,
-    mode: PropTypes.string,
-    onDateChange: PropTypes.func,
-    theme: PropTypes.object,
-    timeZoneOffsetInMinutes: PropTypes.number
-  };
 
   static defaultProps = {
     closeText: 'Done',
@@ -214,7 +202,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
     let labelElement;
     const {label} = this.state;
 
-    if(label) {
+    if (label) {
       const {
         selectPickerFont = 'Helvetica',
         selectPickerLabelColor = '#fff',
@@ -254,7 +242,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
     const offsetInMin: number = +(DateTime.local().setZone(timezone).toFormat('Z')) * 60;
     const {locale} = DateTime.local();
 
-    if(showPicker) {
+    if (showPicker) {
       return (
         <View key="container" style={viewStyles.container} onLayout={this.animatePicker}>
           <TouchableWithoutFeedback key="overlay" onPress={this.closePicker}>

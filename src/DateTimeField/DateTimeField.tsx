@@ -1,15 +1,8 @@
-import {Flux, FluxAction} from 'arkhamjs';
+import {Flux, FluxAction} from '@nlabs/arkhamjs';
 import {DateTime} from 'luxon';
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextStyle,
-  TouchableHighlight,
-  View,
-  ViewStyle
-} from 'react-native';
+import {StyleSheet, Text, TextStyle, TouchableHighlight, View, ViewStyle} from 'react-native';
+
 import {ComponentConstants} from '../constants/ComponentConstants';
 import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 import {DateTimeConfigType} from '../types/InputTypes';
@@ -31,23 +24,6 @@ export interface DateTimeFieldProps extends FormFieldProps {
 }
 
 export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState> {
-  static propTypes: object = {
-    ...FormField.propTypes,
-    dateFormat: PropTypes.string,
-    label: PropTypes.string,
-    labelStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    minimumDate: PropTypes.number,
-    minuteInterval: PropTypes.number,
-    mode: PropTypes.string,
-    onPress: PropTypes.func,
-    placeholder: PropTypes.string,
-    placeholderTextColor: PropTypes.string,
-    style: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
-    textStyle: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.number]),
-    theme: PropTypes.object,
-    timezone: PropTypes.string
-  };
-
   static defaultProps: object = {
     format: 'D h:mm a',
     label: '',
@@ -56,14 +32,6 @@ export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState>
     placeholder: '',
     theme: {},
     timezone: 'America/Chicago'
-  };
-
-  static contextTypes: object = {
-    add: PropTypes.func.isRequired,
-    errors: PropTypes.object,
-    update: PropTypes.func.isRequired,
-    validate: PropTypes.func,
-    values: PropTypes.object.isRequired
   };
 
   constructor(props: DateTimeFieldProps) {
@@ -86,7 +54,7 @@ export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState>
     const {required} = this.props;
     this.types = ['dateTime'];
 
-    if(required) {
+    if (required) {
       this.types.push('required');
     }
 
@@ -138,7 +106,7 @@ export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState>
   onClose(): void {
     const {onSubmitEditing} = this.props;
 
-    if(onSubmitEditing) {
+    if (onSubmitEditing) {
       onSubmitEditing(null);
     }
   }
@@ -152,7 +120,7 @@ export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState>
     // Call field update listener
     const {onUpdate} = this.props;
 
-    if(onUpdate) {
+    if (onUpdate) {
       onUpdate(value);
     }
   }
@@ -161,7 +129,7 @@ export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState>
     const {timezone} = this.props;
     let dateTime: DateTime = DateTime.fromMillis(value).set({second: 0, millisecond: 0});
 
-    if(!defaultOffset && timezone) {
+    if (!defaultOffset && timezone) {
       /* offset = moment().tz(timezone).format('Z');*/
       dateTime = dateTime.setZone(timezone);
     }
@@ -182,7 +150,7 @@ export class DateTimeField extends FormField<DateTimeFieldProps, FormFieldState>
       fontSize: inputFieldLabelSize
     };
 
-    if(label !== '') {
+    if (label !== '') {
       return <Text style={[themeStyle, labelStyle]}>{label}</Text>;
     }
 

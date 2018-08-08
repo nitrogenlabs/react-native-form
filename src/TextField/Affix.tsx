@@ -1,11 +1,6 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import {Animated, StyleSheet, TextStyle} from 'react-native';
 
-import {
-  Animated,
-  StyleSheet,
-  TextStyle
-} from 'react-native';
 import Value = Animated.Value;
 
 export interface AffixProps {
@@ -25,18 +20,6 @@ export interface AffixState {
 }
 
 export class Affix extends React.PureComponent<AffixProps, AffixState> {
-  static propTypes = {
-    active: PropTypes.bool,
-    animationDuration: PropTypes.number,
-    baseColor: PropTypes.string,
-    children: PropTypes.node,
-    fontFamily: PropTypes.string,
-    fontSize: PropTypes.number.isRequired,
-    isFocused: PropTypes.bool,
-    numberOfLines: PropTypes.number,
-    type: PropTypes.oneOf(['prefix', 'suffix'])
-  };
-
   static defaultProps = {
     active: false,
     animationDuration: 150,
@@ -60,7 +43,7 @@ export class Affix extends React.PureComponent<AffixProps, AffixState> {
     const {opacity} = this.state;
     const {active, isFocused, animationDuration} = this.props;
 
-    if((isFocused !== props.isFocused) || (active !== props.active)) {
+    if ((isFocused !== props.isFocused) || (active !== props.active)) {
       Animated
         .timing(opacity, {
           duration: animationDuration,
@@ -88,7 +71,7 @@ export class Affix extends React.PureComponent<AffixProps, AffixState> {
       opacity: 0.7
     };
 
-    switch(type) {
+    switch (type) {
       case 'prefix':
         containerStyle.paddingRight = padding;
         textStyle.textAlign = 'left';

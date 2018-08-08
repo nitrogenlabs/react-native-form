@@ -1,9 +1,6 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import {Animated, TextStyle} from 'react-native';
 
-import {
-  Animated, TextStyle
-} from 'react-native';
 import Value = Animated.Value;
 
 export interface LabelProps {
@@ -29,23 +26,6 @@ export interface LabelState {
 }
 
 export class Label extends React.PureComponent<LabelProps, LabelState> {
-  static propTypes: object = {
-    active: PropTypes.bool,
-    activeFontSize: PropTypes.number,
-    animationDuration: PropTypes.number,
-    baseColor: PropTypes.string,
-    children: PropTypes.node,
-    errorColor: PropTypes.string,
-    errored: PropTypes.bool,
-    fontFamily: PropTypes.string,
-    fontSize: PropTypes.number,
-    isFocused: PropTypes.bool,
-    numberOfLines: PropTypes.number,
-    restricted: PropTypes.bool,
-    style: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    tintColor: PropTypes.string.isRequired
-  };
-
   static defaultProps: object = {
     active: false,
     activeFontSize: 14,
@@ -76,14 +56,14 @@ export class Label extends React.PureComponent<LabelProps, LabelState> {
     const {errorValue, inputValue} = this.state;
     const {active, isFocused, errored, animationDuration} = this.props;
 
-    if((isFocused !== props.isFocused) || (active !== props.active)) {
+    if ((isFocused !== props.isFocused) || (active !== props.active)) {
       Animated.timing(inputValue, {
         duration: animationDuration,
         toValue: (props.active || props.isFocused) ? 1 : 0
       }).start();
     }
 
-    if((isFocused !== props.isFocused) || (errored !== props.errored)) {
+    if ((isFocused !== props.isFocused) || (errored !== props.errored)) {
       Animated.timing(errorValue, {
         duration: animationDuration,
         toValue: props.errored ? -1 : (props.isFocused ? 1 : 0)

@@ -1,6 +1,5 @@
-import {Flux} from 'arkhamjs';
-import {head} from 'lodash';
-import * as PropTypes from 'prop-types';
+import {Flux} from '@nlabs/arkhamjs';
+import head from 'lodash/head';
 import * as React from 'react';
 import {
   StyleSheet,
@@ -24,18 +23,6 @@ export interface SelectFieldProps extends FormFieldProps {
 }
 
 export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
-  static propTypes: object = {
-    ...FormField.propTypes,
-    containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    label: PropTypes.string,
-    labelStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    list: PropTypes.array,
-    name: PropTypes.string.isRequired,
-    onPress: PropTypes.func,
-    placeholder: PropTypes.string,
-    style: PropTypes.oneOfType([PropTypes.object, PropTypes.number])
-  };
-
   static defaultProps: object = {
     ...FormField.defaultProps,
     label: '',

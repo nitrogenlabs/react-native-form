@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 
 import {
@@ -13,11 +12,6 @@ export interface LineProps {
 }
 
 export class Line extends React.PureComponent<LineProps, object> {
-  static propTypes: object = {
-    color: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(['solid', 'dotted', 'dashed']).isRequired
-  };
-
   render(): JSX.Element {
     const {color: borderColor, type: borderStyle} = this.props;
     const lineStyle: ViewStyle = {borderColor, borderStyle};

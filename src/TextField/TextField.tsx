@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {Animated, Platform, StyleSheet, TextInput, TextInputProperties, TextStyle, View, ViewStyle} from 'react-native';
 
@@ -47,31 +46,6 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
   private componentTheme: any;
   private mounted: boolean = false;
   input;
-
-  static propTypes: object = {
-    ...TextInput.propTypes,
-    animationDuration: PropTypes.number,
-    baseColor: PropTypes.string,
-    borderColor: PropTypes.string,
-    characterRestriction: PropTypes.number,
-    containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    disabled: PropTypes.bool,
-    error: PropTypes.string,
-    errorColor: PropTypes.string,
-    fontFamily: PropTypes.string,
-    fontSize: PropTypes.number,
-    help: PropTypes.string,
-    inputStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-    label: PropTypes.string,
-    labelColor: PropTypes.string,
-    labelFontSize: PropTypes.number,
-    prefix: PropTypes.string,
-    renderAccessory: PropTypes.func,
-    suffix: PropTypes.string,
-    textColor: PropTypes.string,
-    theme: PropTypes.object,
-    tintColor: PropTypes.string
-  };
 
   static defaultProps: object = {
     animationDuration: 225,
@@ -195,11 +169,11 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     return characterRestriction < text.length;
   }
 
-  onBlur(): void {
+  onBlur(event): void {
     const {onBlur} = this.props;
 
     if('function' === typeof onBlur) {
-      onBlur();
+      onBlur(event);
     }
 
     this.setState({isFocused: false});
@@ -238,11 +212,11 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     this.setState({height: Math.max(fontSize * 1.5, Math.ceil(height))});
   }
 
-  onFocus(): void {
+  onFocus(event): void {
     const {onFocus} = this.props;
 
     if('function' === typeof onFocus) {
-      onFocus();
+      onFocus(event);
     }
 
     this.setState({isFocused: true, receivedFocus: true});
@@ -470,6 +444,8 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       updateContainerStyle.borderBottomWidth = borderBottomWidth;
     }
 
+    const inputMargin: number = label ? 32 : 0;
+
     return (
       <View
         style={[viewStyles.container, style]}
@@ -491,7 +467,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
               onFocus={this.onFocus}
               selectionColor={tintColor}
               ref={(r) => this.input = r}
-              style={[viewStyles.input, updateInputStyle, inputStyle]}
+              style={[viewStyles.input, {marginTop: inputMargin}, updateInputStyle, inputStyle]}
               value={inputValue} />
 
             {this.renderAffix('suffix', active, isFocused)}
@@ -522,12 +498,13 @@ const viewStyles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    margin: 0,
     padding: 0,
     top: 2
   },
   row: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    flexGrow: 1,
+    flexShrink: 0
   },
   textField: {
     backgroundColor: 'transparent',
