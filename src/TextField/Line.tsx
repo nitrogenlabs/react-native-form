@@ -1,25 +1,9 @@
 import * as React from 'react';
-
-import {
-  StyleSheet,
-  View,
-  ViewStyle
-} from 'react-native';
+import {StyleSheet, View, ViewStyle} from 'react-native';
 
 export interface LineProps {
   readonly color: string;
   readonly type: 'solid' | 'dotted' | 'dashed';
-}
-
-export class Line extends React.PureComponent<LineProps, object> {
-  render(): JSX.Element {
-    const {color: borderColor, type: borderStyle} = this.props;
-    const lineStyle: ViewStyle = {borderColor, borderStyle};
-
-    return (
-      <View style={[viewStyles.line, lineStyle]} pointerEvents="none" />
-    );
-  }
 }
 
 const viewStyles = StyleSheet.create({
@@ -32,3 +16,14 @@ const viewStyles = StyleSheet.create({
     top: -2
   }
 });
+
+export class Line extends React.PureComponent<LineProps, object> {
+  render(): JSX.Element {
+    const {color: borderColor, type: borderStyle} = this.props;
+    const lineStyle: ViewStyle = {borderColor, borderStyle};
+
+    return (
+      <View style={[viewStyles.line, lineStyle]} pointerEvents="none" />
+    );
+  }
+}

@@ -19,6 +19,14 @@ export interface AffixState {
   opacity: Value;
 }
 
+const viewStyles = StyleSheet.create({
+  affix: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    top: 2
+  }
+});
+
 export class Affix extends React.PureComponent<AffixProps, AffixState> {
   static defaultProps = {
     active: false,
@@ -43,7 +51,7 @@ export class Affix extends React.PureComponent<AffixProps, AffixState> {
     const {opacity} = this.state;
     const {active, isFocused, animationDuration} = this.props;
 
-    if ((isFocused !== props.isFocused) || (active !== props.active)) {
+    if((isFocused !== props.isFocused) || (active !== props.active)) {
       Animated
         .timing(opacity, {
           duration: animationDuration,
@@ -71,7 +79,7 @@ export class Affix extends React.PureComponent<AffixProps, AffixState> {
       opacity: 0.7
     };
 
-    switch (type) {
+    switch(type) {
       case 'prefix':
         containerStyle.paddingRight = padding;
         textStyle.textAlign = 'left';
@@ -91,11 +99,3 @@ export class Affix extends React.PureComponent<AffixProps, AffixState> {
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  affix: {
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    top: 2
-  }
-});

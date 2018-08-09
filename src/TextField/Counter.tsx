@@ -1,11 +1,5 @@
 import * as React from 'react';
-
-import {
-  StyleSheet,
-  Text,
-  TextStyle,
-  View
-} from 'react-native';
+import {StyleSheet, Text, TextStyle, View} from 'react-native';
 
 export interface CounterProps {
   readonly baseColor: string;
@@ -14,6 +8,17 @@ export interface CounterProps {
   readonly fontSize?: number;
   readonly limit: number;
 }
+
+const viewStyles = StyleSheet.create({
+  counter: {
+    paddingLeft: 4,
+    paddingVertical: 4
+  },
+  counterText: {
+    backgroundColor: 'transparent',
+    textAlign: 'right'
+  }
+});
 
 export class Counter extends React.PureComponent<CounterProps, object> {
   static defaultProps: object = {
@@ -39,14 +44,3 @@ export class Counter extends React.PureComponent<CounterProps, object> {
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  counter: {
-    paddingLeft: 4,
-    paddingVertical: 4
-  },
-  counterText: {
-    backgroundColor: 'transparent',
-    textAlign: 'right'
-  }
-});

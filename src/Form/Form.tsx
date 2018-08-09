@@ -2,6 +2,7 @@ import {Flux} from '@nlabs/arkhamjs';
 import cloneDeep from 'lodash/cloneDeep';
 import forEach from 'lodash/forEach';
 import isEqual from 'lodash/isEqual';
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {Keyboard, View, ViewStyle} from 'react-native';
 
@@ -50,16 +51,27 @@ export interface FormFieldType {
 }
 
 export class Form extends React.Component<FormProps, object> {
-  errors: object = {};
-  fields: FormFieldListType = {};
-  values: object = {};
-
   static defaultProps: object = {
     blurOnSubmit: false,
     errors: {},
     style: {},
     values: {}
   };
+
+  static childContextTypes: object = {
+    add: PropTypes.func,
+    errors: PropTypes.object,
+    isFormValid: PropTypes.func,
+    reset: PropTypes.func,
+    submit: PropTypes.func,
+    update: PropTypes.func,
+    validate: PropTypes.func,
+    values: PropTypes.object
+  };
+
+  errors: object = {};
+  fields: FormFieldListType = {};
+  values: object = {};
 
   constructor(props) {
     super(props, 'form');
@@ -96,7 +108,7 @@ export class Form extends React.Component<FormProps, object> {
   componentWillReceiveProps(props): void {
     const {values} = props;
 
-    if (!isEqual(this.values, values)) {
+    if(!isEqual(this.values, values)) {
       this.updateFormFields(values);
     }
   }
@@ -117,8 +129,8 @@ export class Form extends React.Component<FormProps, object> {
   addField(field: FormField<FormFieldProps, FormFieldState>): void {
     const {name} = field;
 
-    if (name) {
-      if (!this.fields[name]) {
+    if(name) {
+      if(!this.fields[name]) {
         // Save the reference of the form field if not already saved
         this.fields[name] = field;
 
@@ -136,13 +148,14 @@ export class Form extends React.Component<FormProps, object> {
 
   updateFormFields(values): void {
     Object.keys(values).forEach((name: string) => {
-      if (!isEqual(this.values[name], values[name])) {
+      if(!isEqual(this.values[name], values[name])) {
         this.update('change', name, values[name]);
       }
     });
   }
 
-  validate(actionType?: string): void {
+  validate(actionType?: string): string {
+    return actionType;
     // let extraErrors: object = {};
     // const {onValidate} = this.props;
 
@@ -184,11 +197,11 @@ export class Form extends React.Component<FormProps, object> {
   }
 
   update(actionType: string, name: string, value: string): void {
-    if (!name) {
+    if(!name) {
       return;
     }
 
-    if (this.fields[name]) {
+    if(this.fields[name]) {
       // Update values in form for submission object
       this.values[name] = cloneDeep(value);
 
@@ -197,11 +210,11 @@ export class Form extends React.Component<FormProps, object> {
     }
 
     // Only call update listener if a change action has occurred
-    if (actionType !== 'init') {
+    if(actionType !== 'init') {
       const {onUpdate} = this.props;
 
       // Call the form update listener
-      if (onUpdate) {
+      if(onUpdate) {
         const updateProps: FormUpdateProps = {
           actionType,
           name,
@@ -225,20 +238,20 @@ export class Form extends React.Component<FormProps, object> {
     this.validate('submit');
 
     // Check if valid
-    if (this.isFormValid()) {
+    if(this.isFormValid()) {
       // Make sure we blur all fields
-      if (blurOnSubmit) {
+      if(blurOnSubmit) {
         forEach(this.fields, (field: FormField<FormFieldProps, FormFieldState>) => {
           field.blur();
         });
       }
 
       // Submit
-      if (onSubmit) {
+      if(onSubmit) {
         onSubmit(this.values);
       }
 
-      if (onReset) {
+      if(onReset) {
         onReset();
       }
     }
@@ -252,7 +265,7 @@ export class Form extends React.Component<FormProps, object> {
   onClose(data): void {
     const {name} = data;
 
-    if (this.fields[name]) {
+    if(this.fields[name]) {
       this.fields[name].close();
     }
   }

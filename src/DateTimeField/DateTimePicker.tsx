@@ -45,9 +45,61 @@ export interface DateTimePickerState {
   readonly timezone: string;
 }
 
-export class DateTimePicker extends React.PureComponent<DateTimePickerProps, DateTimePickerState> {
-  private componentTheme: any;
+const windowSize = Dimensions.get('window');
+const viewStyles = StyleSheet.create({
+  closeBtn: {
+    height: 30,
+    paddingBottom: 3,
+    paddingTop: 2
+  },
+  container: {
+    bottom: 0,
+    height: windowSize.height,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: windowSize.width
+  },
+  label: {
+    textAlign: 'center'
+  },
+  labelContainer: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginLeft: 60,
+    width: windowSize.width - 180
+  },
+  overlay: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0
+  },
+  picker: {
+    width: windowSize.width
+  },
+  pickerHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingLeft: 15,
+    paddingRight: 15
+  },
+  selector: {
+    borderRadius: 3,
+    bottom: 0,
+    flexDirection: 'column',
+    left: 0,
+    paddingBottom: 15,
+    position: 'absolute',
+    right: 0
+  }
+});
 
+export class DateTimePicker extends React.PureComponent<DateTimePickerProps, DateTimePickerState> {
   static defaultProps = {
     closeText: 'Done',
     date: new Date(),
@@ -55,6 +107,8 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
     mode: 'datetime',
     theme: {}
   };
+
+  private componentTheme: any;
 
   constructor(props: DateTimePickerProps) {
     super(props);
@@ -131,7 +185,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
       name,
       selectedValue = new Date()
     } = this.state;
-    const value: number = DateTime.fromJSDate(selectedValue).set({second: 0, millisecond: 0}).ts;
+    const value: number = DateTime.fromJSDate(selectedValue).set({millisecond: 0, second: 0}).ts;
 
     await this.pickerChange(name, value);
     await this.pickerClose(name);
@@ -153,9 +207,8 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
         useNativeDriver: true
       })
     ]).start(() => {
-      this.setState({name: '', label: '', selectedValue: new Date(value), showPicker: false});
+      this.setState({label: '', name: '', selectedValue: new Date(value), showPicker: false});
     });
-
   }
 
   animatePicker(): void {
@@ -184,11 +237,11 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
   }
 
   async pickerChange(name: string, value): Promise<FluxAction> {
-    return Flux.dispatch({type: ComponentConstants.PICKER_CHANGE, name, value});
+    return Flux.dispatch({name, type: ComponentConstants.PICKER_CHANGE, value});
   }
 
   async pickerClose(name: string): Promise<FluxAction> {
-    return Flux.dispatch({type: ComponentConstants.PICKER_CLOSE, name});
+    return Flux.dispatch({name, type: ComponentConstants.PICKER_CLOSE});
   }
 
   onChange(selectedValue: Date = new Date()): void {
@@ -202,7 +255,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
     let labelElement;
     const {label} = this.state;
 
-    if (label) {
+    if(label) {
       const {
         selectPickerFont = 'Helvetica',
         selectPickerLabelColor = '#fff',
@@ -242,7 +295,7 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
     const offsetInMin: number = +(DateTime.local().setZone(timezone).toFormat('Z')) * 60;
     const {locale} = DateTime.local();
 
-    if (showPicker) {
+    if(showPicker) {
       return (
         <View key="container" style={viewStyles.container} onLayout={this.animatePicker}>
           <TouchableWithoutFeedback key="overlay" onPress={this.closePicker}>
@@ -278,56 +331,3 @@ export class DateTimePicker extends React.PureComponent<DateTimePickerProps, Dat
     return null;
   }
 }
-const windowSize = Dimensions.get('window');
-const viewStyles = StyleSheet.create({
-  closeBtn: {
-    height: 30,
-    paddingBottom: 3,
-    paddingTop: 2
-  },
-  container: {
-    bottom: 0,
-    height: windowSize.height,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    width: windowSize.width
-  },
-  label: {
-    textAlign: 'center'
-  },
-  labelContainer: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginLeft: 60,
-    width: windowSize.width - 180
-  },
-  overlay: {
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0
-  },
-  picker: {
-    width: windowSize.width
-  },
-  pickerHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    paddingLeft: 15,
-    paddingRight: 15
-  },
-  selector: {
-    borderRadius: 3,
-    bottom: 0,
-    flexDirection: 'column',
-    left: 0,
-    paddingBottom: 15,
-    position: 'absolute',
-    right: 0
-  }
-});

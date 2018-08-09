@@ -57,7 +57,7 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
   }
 
   updateValue(value): void {
-    if (this.value !== value) {
+    if(this.value !== value) {
       this.isUpdated = true;
       this.value = value === null || value === undefined ? '' : value.toString();
       this.setState({value: this.value});
@@ -103,7 +103,7 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
     let updatedMultiline: boolean = multiline;
     let updatedSecureTextEntry: boolean = secureTextEntry;
 
-    switch (type) {
+    switch(type) {
       case 'password':
         updatedAutoCapitalize = 'none';
         updatedAutoCorrect = false;
@@ -170,7 +170,7 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
         characterRestriction={softMax}
         disabled={disabled}
         editable={!disabled && editable}
-        enablesReturnKeyAutomatically={true}
+        enablesReturnKeyAutomatically
         errorColor={errorColor || inputFieldErrorColor}
         fontFamily={inputFieldFont}
         fontSize={inputFieldTextSize}
@@ -188,7 +188,7 @@ export class InputField extends FormField<InputFieldProps, FormFieldState> {
         onSubmitEditing={onSubmitEditing}
         prefix={prefix}
         returnKeyType={returnKeyType}
-        ref={(r) => this.inputField = r}
+        ref={(ref) => this.inputField = ref}
         secureTextEntry={updatedSecureTextEntry}
         selectionColor={selectionColor || inputFieldSelectionColor}
         style={style}

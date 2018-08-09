@@ -45,9 +45,10 @@ export class Label extends React.PureComponent<LabelProps, LabelState> {
     super(props);
 
     const {active, isFocused, errored} = this.props;
+    const focusedValue: number = isFocused ? 1 : 0;
 
     this.state = {
-      errorValue: new Animated.Value(errored ? -1 : (isFocused ? 1 : 0)),
+      errorValue: new Animated.Value(errored ? -1 : focusedValue),
       inputValue: new Animated.Value((active || isFocused) ? 1 : 0)
     };
   }
@@ -56,17 +57,19 @@ export class Label extends React.PureComponent<LabelProps, LabelState> {
     const {errorValue, inputValue} = this.state;
     const {active, isFocused, errored, animationDuration} = this.props;
 
-    if ((isFocused !== props.isFocused) || (active !== props.active)) {
+    if((isFocused !== props.isFocused) || (active !== props.active)) {
       Animated.timing(inputValue, {
         duration: animationDuration,
         toValue: (props.active || props.isFocused) ? 1 : 0
       }).start();
     }
 
-    if ((isFocused !== props.isFocused) || (errored !== props.errored)) {
+    if((isFocused !== props.isFocused) || (errored !== props.errored)) {
+      const focusedValue: number = props.isFocused ? 1 : 0;
+
       Animated.timing(errorValue, {
         duration: animationDuration,
-        toValue: props.errored ? -1 : (props.isFocused ? 1 : 0)
+        toValue: props.errored ? -1 : focusedValue
       }).start();
     }
   }
@@ -98,8 +101,8 @@ export class Label extends React.PureComponent<LabelProps, LabelState> {
     const top = inputValue.interpolate({
       inputRange: [0, 1],
       outputRange: [
-        32 + fontSize * 0.25,
-        32 - fontSize * 0.25 - activeFontSize
+        32 + (fontSize * 0.25),
+        32 - (fontSize * 0.25) - activeFontSize
       ]
     });
 

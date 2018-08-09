@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {TextInputProperties} from 'react-native';
 
@@ -31,6 +32,14 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     value: ''
   };
 
+  static contextTypes: object = {
+    add: PropTypes.func.isRequired,
+    errors: PropTypes.object,
+    update: PropTypes.func.isRequired,
+    validate: PropTypes.func,
+    values: PropTypes.object.isRequired
+  };
+
   constructor(props: FormFieldProps) {
     super(props as any);
 
@@ -60,7 +69,7 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     this.types = [type];
     this.value = value;
 
-    if (required) {
+    if(required) {
       this.types.push('required');
     }
 
@@ -74,13 +83,13 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
   close(): void {
     const {onSubmitEditing} = this.props;
 
-    if (onSubmitEditing) {
+    if(onSubmitEditing) {
       onSubmitEditing(null);
     }
   }
 
   updateValue(value: string): void {
-    if (this.value !== value) {
+    if(this.value !== value) {
       this.isUpdated = true;
       this.value = value;
       this.setState({value});
@@ -88,21 +97,21 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
   }
 
   onUpdate(value): void {
-    if (!this.hasSubmit) {
+    if(!this.hasSubmit) {
       // Update the value in the form
       this.context.update('change', this.name, value);
 
       // Call an update functions
       const {onUpdate} = this.props;
 
-      if (onUpdate) {
+      if(onUpdate) {
         onUpdate(value);
       }
     }
   }
 
   focus(): void {
-    if (this.inputField) {
+    if(this.inputField) {
       this.inputField.focus();
     }
   }
@@ -115,13 +124,13 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     this.setState({isFocused: true});
     const {onFocus} = this.props;
 
-    if (onFocus) {
+    if(onFocus) {
       onFocus(event);
     }
   }
 
   blur(): void {
-    if (this.inputField) {
+    if(this.inputField) {
       this.inputField.blur();
     }
   }
@@ -129,7 +138,7 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
   onBlur(event): void {
     this.setState({isFocused: false});
 
-    if (this.props.onBlur) {
+    if(this.props.onBlur) {
       this.props.onBlur(event);
     }
   }
@@ -145,7 +154,7 @@ export abstract class FormField<P extends FormFieldProps, S extends FormFieldSta
     this.blur();
     const {onSubmitEditing} = this.props;
 
-    if (onSubmitEditing) {
+    if(onSubmitEditing) {
       onSubmitEditing(event);
     }
   }

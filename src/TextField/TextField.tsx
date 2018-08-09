@@ -42,11 +42,38 @@ export interface TextFieldState {
   readonly text?: string;
 }
 
-export class TextField extends React.PureComponent<TextFieldProps, TextFieldState> {
-  private componentTheme: any;
-  private mounted: boolean = false;
-  input;
+const viewStyles = StyleSheet.create({
+  accessory: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    top: 2
+  },
+  container: {
+    flexGrow: 1,
+    flexShrink: 0,
+    marginBottom: 5
+  },
+  flex: {
+    flexGrow: 1,
+    flexShrink: 0
+  },
+  input: {
+    flex: 1,
+    padding: 0,
+    top: 2
+  },
+  row: {
+    flexDirection: 'row',
+    flexGrow: 1,
+    flexShrink: 0
+  },
+  textField: {
+    backgroundColor: 'transparent',
+    flexDirection: 'column'
+  }
+});
 
+export class TextField extends React.PureComponent<TextFieldProps, TextFieldState> {
   static defaultProps: object = {
     animationDuration: 225,
     autoCapitalize: 'sentences',
@@ -62,6 +89,10 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     tintColor: 'rgb(0, 145, 234)',
     underlineColorAndroid: 'transparent'
   };
+
+  input;
+  private componentTheme: any;
+  private mounted: boolean = false;
 
   constructor(props: TextFieldProps) {
     super(props);
@@ -122,10 +153,12 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     const {focus, isFocused} = this.state;
 
     if(props.error !== error || (isFocused !== state.isFocused)) {
+      const focusedValue: number = state.isFocused ? 1 : 0;
+
       Animated
         .timing(focus, {
           duration: animationDuration,
-          toValue: props.error ? -1 : (state.isFocused ? 1 : 0)
+          toValue: props.error ? -1 : focusedValue
         })
         .start(() => {
           if(this.mounted) {
@@ -331,7 +364,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
           <View style={viewStyles.flex}>
             {helper}
           </View>
-          <Counter {...{baseColor, errorColor, count, limit}} />
+          <Counter {...{baseColor, count, errorColor, limit}} />
         </Animated.View>
       );
     }
@@ -406,14 +439,14 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
       borderBottomColor,
       borderBottomWidth,
       overflow: 'visible',
-      ...(props.multiline ? {height: 40 + height} : {height: 40 + fontSize * 1.5})
+      ...(props.multiline ? {height: 40 + height} : {height: 40 + (fontSize * 1.5)})
     };
 
     const updateInputStyle = {
       color: defaultVisible ? baseColor : textColor,
       ...(props.multiline ?
         {
-          height: fontSize * 1.5 + height,
+          height: (fontSize * 1.5) + height,
           ...Platform.select({android: {top: 0}, ios: {top: -1}})
         } : {height: fontSize * 1.5}),
       fontFamily,
@@ -466,7 +499,7 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
               onContentSizeChange={this.onContentSizeChange}
               onFocus={this.onFocus}
               selectionColor={tintColor}
-              ref={(r) => this.input = r}
+              ref={(ref) => this.input = ref}
               style={[viewStyles.input, {marginTop: inputMargin}, updateInputStyle, inputStyle]}
               value={inputValue} />
 
@@ -480,34 +513,3 @@ export class TextField extends React.PureComponent<TextFieldProps, TextFieldStat
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  accessory: {
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    top: 2
-  },
-  container: {
-    flexGrow: 1,
-    flexShrink: 0,
-    marginBottom: 5
-  },
-  flex: {
-    flexGrow: 1,
-    flexShrink: 0
-  },
-  input: {
-    flex: 1,
-    padding: 0,
-    top: 2
-  },
-  row: {
-    flexDirection: 'row',
-    flexGrow: 1,
-    flexShrink: 0
-  },
-  textField: {
-    backgroundColor: 'transparent',
-    flexDirection: 'column'
-  }
-});

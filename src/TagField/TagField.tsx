@@ -27,6 +27,65 @@ export interface TagFieldState extends FormFieldState {
   readonly tags?: SelectOptionType[];
 }
 
+const viewStyles = StyleSheet.create({
+  availableContainer: {
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+    marginBottom: 2,
+    marginTop: 0,
+    paddingBottom: 5,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 5
+  },
+  availableTag: {
+    alignItems: 'center',
+    borderRadius: 3,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginRight: 10,
+    overflow: 'hidden',
+    paddingBottom: 3,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 3
+  },
+  availableTagsView: {
+    alignItems: 'center',
+    flexDirection: 'row'
+  },
+  selectedCloseBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+    paddingBottom: 0,
+    paddingTop: 0
+  },
+  selectedContainer: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 3
+  },
+  selectedTag: {
+    alignItems: 'center',
+    borderRadius: 3,
+    flexDirection: 'row',
+    marginBottom: 5,
+    marginRight: 5,
+    overflow: 'hidden',
+    paddingBottom: 8,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 8
+  },
+  tagField: {
+    marginBottom: 5
+  }
+});
+
 export class TagField extends FormField<TagFieldProps, TagFieldState> {
   static defaultProps: object = {
     animationDuration: 150,
@@ -68,7 +127,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
   onBlur(event): void {
     const {onBlur} = this.props;
 
-    if (typeof onBlur === 'function') {
+    if(typeof onBlur === 'function') {
       onBlur(event);
     }
 
@@ -78,7 +137,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
   onFocus(event): void {
     const {onFocus} = this.props;
 
-    if (typeof onFocus === 'function') {
+    if(typeof onFocus === 'function') {
       onFocus(event);
     }
 
@@ -86,11 +145,11 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
   }
 
   onSubmitEditing(event: {nativeEvent: {text: string}}): void {
-    const text: string = event.nativeEvent.text;
+    const {text} = event.nativeEvent;
     const formatQuery: string = this.formatTag(text);
     const item: SelectOptionType = this.getSelectedItem(formatQuery);
 
-    if (item) {
+    if(item) {
       this.addTag(item);
     }
 
@@ -104,7 +163,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
   onUpdateTags(): void {
     const {onUpdate} = this.props;
 
-    if (onUpdate) {
+    if(onUpdate) {
       const {selectedTags} = this.state;
       onUpdate(selectedTags);
     }
@@ -131,9 +190,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     return str
       .replace(/#/g, '')
       .trim()
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => {
-        return index === 0 ? letter.toLowerCase() : letter.toUpperCase();
-      })
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => (index === 0 ? letter.toLowerCase() : letter.toUpperCase()))
       .replace(/\s+/g, '');
   }
 
@@ -144,7 +201,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     const isNotSelected: boolean = selectedTags
       .findIndex((existingItem: SelectOptionType) => existingItem.label === query) < 0;
 
-    if (isNotSelected) {
+    if(isNotSelected) {
       // If not already selected, see if it is an existing tag.
       let item: SelectOptionType = tags.find((tagItem: SelectOptionType) => {
         const {label = ''} = tagItem;
@@ -152,7 +209,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
       });
 
       // If not existent, create a new tag.
-      if (!item) {
+      if(!item) {
         item = {label: query, value: ''};
       }
 
@@ -193,11 +250,11 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     const {showSearch} = this.props;
     const {searchFilterTags} = this.state;
 
-    if (showSearch && searchFilterTags.length) {
+    if(showSearch && searchFilterTags.length) {
       // Only use the tags that have not already been selected.
       const availableTags: SelectOptionType[] = this.getAvailableItems();
 
-      if (availableTags.length) {
+      if(availableTags.length) {
         const {
           inputFieldSelectionColor,
           inputFieldTextSize,
@@ -233,7 +290,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
 
         return (
           <View style={[viewStyles.availableContainer, availContainerStyle]}>
-            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={viewStyles.availableTagsView}>
                 {tagElements}
               </View>
@@ -277,7 +334,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
       height: tagSelectedCloseTextSize
     };
 
-    if (selectedTags.length) {
+    if(selectedTags.length) {
       const selectedElements = selectedTags.map((item: SelectOptionType) => (
         <View
           key={item.label}
@@ -339,7 +396,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
           containerStyle={{marginBottom: 0}}
           disabled={disabled}
           editable={!disabled}
-          enablesReturnKeyAutomatically={true}
+          enablesReturnKeyAutomatically
           errorColor={inputFieldErrorColor}
           fontFamily={inputFieldFont}
           fontSize={inputFieldTextSize}
@@ -358,7 +415,7 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
           placeholder={placeholder}
           prefix="#"
           returnKeyType="default"
-          ref={(r) => this.inputField = r}
+          ref={(ref) => this.inputField = ref}
           selectionColor={inputFieldSelectionColor}
           textColor={inputFieldTextColor}
           tintColor={inputFieldSelectionColor}
@@ -369,62 +426,3 @@ export class TagField extends FormField<TagFieldProps, TagFieldState> {
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  availableContainer: {
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
-    marginBottom: 2,
-    marginTop: 0,
-    paddingBottom: 5,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 5
-  },
-  availableTag: {
-    alignItems: 'center',
-    borderRadius: 3,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginRight: 10,
-    overflow: 'hidden',
-    paddingBottom: 3,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 3
-  },
-  availableTagsView: {
-    alignItems: 'center',
-    flexDirection: 'row'
-  },
-  selectedCloseBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
-    paddingBottom: 0,
-    paddingTop: 0
-  },
-  selectedContainer: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 3
-  },
-  selectedTag: {
-    alignItems: 'center',
-    borderRadius: 3,
-    flexDirection: 'row',
-    marginBottom: 5,
-    marginRight: 5,
-    overflow: 'hidden',
-    paddingBottom: 8,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 8
-  },
-  tagField: {
-    marginBottom: 5
-  }
-});

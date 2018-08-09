@@ -9,6 +9,21 @@ export interface TagItemProps {
   readonly theme?: any;
 }
 
+const viewStyles = StyleSheet.create({
+  tagWrapper: {
+    alignItems: 'center',
+    borderRadius: 3,
+    flexDirection: 'row',
+    marginBottom: 5,
+    marginRight: 5,
+    overflow: 'hidden',
+    paddingBottom: 8,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 6
+  }
+});
+
 export class TagItem extends React.PureComponent<TagItemProps, {}> {
   private componentTheme: any;
 
@@ -48,18 +63,3 @@ export class TagItem extends React.PureComponent<TagItemProps, {}> {
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  tagWrapper: {
-    alignItems: 'center',
-    borderRadius: 3,
-    flexDirection: 'row',
-    marginBottom: 5,
-    marginRight: 5,
-    overflow: 'hidden',
-    paddingBottom: 8,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 6
-  }
-});

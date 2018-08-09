@@ -1,15 +1,12 @@
 import {Flux} from '@nlabs/arkhamjs';
 import head from 'lodash/head';
 import * as React from 'react';
-import {
-  StyleSheet,
-  Text, TextStyle,
-  TouchableOpacity,
-  View, ViewStyle
-} from 'react-native';
+import {StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+
 import {ComponentConstants} from '../constants/ComponentConstants';
 import {FormField, FormFieldProps, FormFieldState} from '../FormField/FormField';
 import {SelectOptionType} from '../types/InputTypes';
+
 
 export interface SelectFieldProps extends FormFieldProps {
   readonly containerStyle?: ViewStyle;
@@ -21,6 +18,23 @@ export interface SelectFieldProps extends FormFieldProps {
   readonly placeholder?: string;
   readonly style?: ViewStyle;
 }
+
+const viewStyles = StyleSheet.create({
+  inputBox: {
+    flex: 1,
+    flexDirection: 'column',
+    marginBottom: 0,
+    overflow: 'hidden'
+  },
+  textInput: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    justifyContent: 'center',
+    marginBottom: 10,
+    paddingBottom: 8,
+    paddingTop: 5
+  }
+});
 
 export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
   static defaultProps: object = {
@@ -51,7 +65,7 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
     const {disabled, label, list, name} = this.props;
 
     if(!disabled) {
-      Flux.dispatch({type: ComponentConstants.PICKER_OPEN, label, list, name, value: this.value});
+      Flux.dispatch({label, list, name, type: ComponentConstants.PICKER_OPEN, value: this.value});
     }
   }
 
@@ -97,9 +111,8 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
 
     if(selectedLabel) {
       return <Text style={[themeStyle, disabledStyle]}>{selectedLabel}</Text>;
-    } else {
-      return <Text style={[themeStyle, disabledStyle]}>{placeholder}</Text>;
     }
+    return <Text style={[themeStyle, disabledStyle]}>{placeholder}</Text>;
   }
 
   render(): JSX.Element {
@@ -129,20 +142,3 @@ export class SelectField extends FormField<SelectFieldProps, FormFieldState> {
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  inputBox: {
-    flex: 1,
-    flexDirection: 'column',
-    marginBottom: 0,
-    overflow: 'hidden'
-  },
-  textInput: {
-    backgroundColor: 'transparent',
-    borderBottomWidth: 1,
-    justifyContent: 'center',
-    marginBottom: 10,
-    paddingBottom: 8,
-    paddingTop: 5
-  }
-});

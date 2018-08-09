@@ -1,4 +1,5 @@
 import {DeviceUtils} from '@nlabs/react-native-utils';
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 import Ionicon from 'react-native-vector-icons/Ionicons';
@@ -30,9 +31,35 @@ export interface ButtonStyleObject {
   label: TextStyle;
 }
 
-export class Button extends React.PureComponent<ButtonProps, object> {
-  private componentTheme: any;
+const viewStyles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  container: {
+    alignSelf: 'stretch',
+    backfaceVisibility: 'hidden',
+    flexDirection: 'column'
+  },
+  icon: {
+    fontSize: 24,
+    marginRight: 5,
+    marginTop: 5
+  },
+  iconBg: {
+  },
+  iconBtn: {
+    fontSize: 36
+  },
+  label: {
+    justifyContent: 'center',
+    textAlign: 'center'
+  }
+});
 
+export class Button extends React.PureComponent<ButtonProps, object> {
   static defaultProps: object = {
     bgColor: '#000000',
     disabled: false,
@@ -42,6 +69,13 @@ export class Button extends React.PureComponent<ButtonProps, object> {
     style: {},
     type: 'primary'
   };
+
+  static contextTypes: object = {
+    isFormValid: PropTypes.func,
+    submit: PropTypes.func
+  };
+
+  private componentTheme: any;
 
   constructor(props) {
     super(props);
@@ -69,7 +103,7 @@ export class Button extends React.PureComponent<ButtonProps, object> {
     };
     const {type} = this.props;
 
-    switch (type) {
+    switch(type) {
       case 'primary':
         return this.getPrimaryStyles(button, label);
       case 'secondary':
@@ -87,13 +121,14 @@ export class Button extends React.PureComponent<ButtonProps, object> {
 
   getAttributeStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {icon, iconAlign, size, type, width} = this.props;
+    let updatedButton: ViewStyle = button;
 
-    if (size === 'sm') {
+    if(size === 'sm') {
       label.fontSize = 14;
 
-      if (type !== 'link') {
-        button = {
-          ...button,
+      if(type !== 'link') {
+        updatedButton = {
+          ...updatedButton,
           borderRadius: 5,
           borderWidth: 1,
           paddingBottom: 3,
@@ -102,140 +137,142 @@ export class Button extends React.PureComponent<ButtonProps, object> {
       }
     }
 
-    if (width) {
-      button.width = width;
+    if(width) {
+      updatedButton.width = width;
     } else {
-      if (size === 'sm') {
-        button = {
-          ...button,
+      if(size === 'sm') {
+        updatedButton = {
+          ...updatedButton,
           paddingLeft: 10,
           paddingRight: 10
         };
       } else {
-        button = {
-          ...button,
+        updatedButton = {
+          ...updatedButton,
           paddingLeft: 15,
           paddingRight: 15
         };
       }
     }
 
-    if (icon) {
-      if (iconAlign === 'left') {
-        button.paddingLeft = 0;
-      } else if (iconAlign === 'right') {
-        button.paddingRight = 0;
+    if(icon) {
+      if(iconAlign === 'left') {
+        updatedButton.paddingLeft = 0;
+      } else if(iconAlign === 'right') {
+        updatedButton.paddingRight = 0;
       }
     }
 
-    return {button, label};
+    return {button: updatedButton, label};
   }
 
   getPrimaryStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {labelColor} = this.props;
     const {buttonPrimaryBgColor, buttonPrimaryLabelColor} = this.componentTheme;
 
-    button = {
+    const updatedButton: ViewStyle = {
       ...button,
       backgroundColor: buttonPrimaryBgColor,
       borderColor: buttonPrimaryBgColor
     };
 
-    label = {
+    const updatedLabel: TextStyle = {
       ...label,
       color: labelColor || buttonPrimaryLabelColor,
       fontWeight: '500'
     };
 
-    return this.getAttributeStyles(button, label);
+    return this.getAttributeStyles(updatedButton, updatedLabel);
   }
 
   getSecondaryStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {labelColor} = this.props;
     const {buttonSecondaryBgColor, buttonSecondaryLabelColor} = this.componentTheme;
 
-    button = {
+    const updatedButton: ViewStyle = {
       ...button,
       backgroundColor: buttonSecondaryBgColor,
       borderColor: buttonSecondaryBgColor
     };
 
-    label = {
+    const updatedLabel: TextStyle = {
       ...label,
       color: labelColor || buttonSecondaryLabelColor,
       fontWeight: '700'
     };
 
-    return this.getAttributeStyles(button, label);
+    return this.getAttributeStyles(updatedButton, updatedLabel);
   }
 
   getDefaultSyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {labelColor} = this.props;
     const {buttonDefaultBgColor, buttonDefaultLabelColor} = this.componentTheme;
 
-    button = {
+    const updatedButton: ViewStyle = {
       ...button,
       backgroundColor: buttonDefaultBgColor,
       borderRadius: 8
     };
 
-    label = {
+    const updatedLabel: TextStyle = {
+      ...label,
       color: labelColor || buttonDefaultLabelColor,
       fontSize: 18,
       fontWeight: '700'
     };
 
-    return this.getAttributeStyles(button, label);
+    return this.getAttributeStyles(updatedButton, updatedLabel);
   }
 
   getLinkStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {labelColor} = this.props;
     const {buttonLinkLabelColor} = this.componentTheme;
 
-    button = {
+    const updatedButton: ViewStyle = {
       backgroundColor: 'transparent',
       paddingBottom: 5,
       paddingTop: 5
     };
 
-    label = {
+    const updatedLabel: TextStyle = {
       ...label,
       color: labelColor || buttonLinkLabelColor
     };
 
-    return this.getAttributeStyles(button, label);
+    return this.getAttributeStyles(updatedButton, updatedLabel);
   }
 
   getGhostStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {labelColor, size} = this.props;
     const {buttonFont, buttonPrimaryBgColor} = this.componentTheme;
 
-    button = {
+    const updatedButton: ViewStyle = {
       ...button,
       backgroundColor: 'transparent',
       borderColor: labelColor || buttonPrimaryBgColor
     };
 
-    label = {
+    const updatedLabel: TextStyle = {
+      ...label,
       color: labelColor || buttonPrimaryBgColor,
       fontFamily: buttonFont,
       fontWeight: '500'
     };
 
-    if (size === 'sm') {
-      button.borderWidth = 1;
+    if(size === 'sm') {
+      updatedButton.borderWidth = 1;
     } else {
-      label.fontSize = 16;
-      button.borderWidth = 2;
+      updatedLabel.fontSize = 16;
+      updatedButton.borderWidth = 2;
     }
 
-    return this.getAttributeStyles(button, label);
+    return this.getAttributeStyles(updatedButton, updatedLabel);
   }
 
   getIconStyles(button: ViewStyle, label: TextStyle): ButtonStyleObject {
     const {buttonPrimaryBgColor} = this.componentTheme;
 
-    button = {
+    const updatedButton: ViewStyle = {
       alignItems: 'center',
       backgroundColor: buttonPrimaryBgColor,
       borderRadius: 18,
@@ -245,21 +282,21 @@ export class Button extends React.PureComponent<ButtonProps, object> {
       width: 36
     };
 
-    return {button, label};
+    return {button: updatedButton, label};
   }
 
   onPress(): void {
     const {disabled, isSubmit, onPress} = this.props;
 
-    if (disabled) {
+    if(disabled) {
       return;
     }
 
-    if (isSubmit && this.context.submit) {
+    if(isSubmit && this.context.submit) {
       this.context.submit();
     }
 
-    if (onPress) {
+    if(onPress) {
       onPress();
     }
   }
@@ -269,17 +306,16 @@ export class Button extends React.PureComponent<ButtonProps, object> {
     const {icon, labelColor, labelStyle, type} = this.props;
     const {buttonPrimaryLabelColor} = this.componentTheme;
 
-    if (type === 'icon') {
+    if(type === 'icon') {
       return <Ionicon style={[viewStyles.iconBtn, {color: buttonPrimaryLabelColor}]} name={icon} />;
-    } else {
-      return <Ionicon style={[styles.label, viewStyles.icon, labelStyle]} name={icon} color={labelColor} />;
     }
+    return <Ionicon style={[styles.label, viewStyles.icon, labelStyle]} name={icon} color={labelColor} />;
   }
 
   renderLeftIcon(): JSX.Element {
     const {icon, iconAlign} = this.props;
 
-    if (icon && iconAlign === 'left') {
+    if(icon && iconAlign === 'left') {
       return this.renderIcon();
     }
 
@@ -289,7 +325,7 @@ export class Button extends React.PureComponent<ButtonProps, object> {
   renderRightIcon(): JSX.Element {
     const {icon, iconAlign} = this.props;
 
-    if (icon && iconAlign === 'right') {
+    if(icon && iconAlign === 'right') {
       return this.renderIcon();
     }
 
@@ -301,7 +337,7 @@ export class Button extends React.PureComponent<ButtonProps, object> {
     const {btnStyle, children, disabled, labelStyle, type} = this.props;
     const enabledStyle = disabled ? {opacity: 0.3} : {};
 
-    if (type === 'icon') {
+    if(type === 'icon') {
       return (
         <View style={[viewStyles.button, styles.button, btnStyle, enabledStyle, viewStyles.iconBg]}>
           {this.renderIcon()}
@@ -334,31 +370,3 @@ export class Button extends React.PureComponent<ButtonProps, object> {
     );
   }
 }
-
-const viewStyles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    overflow: 'hidden'
-  },
-  container: {
-    alignSelf: 'stretch',
-    backfaceVisibility: 'hidden',
-    flexDirection: 'column'
-  },
-  icon: {
-    fontSize: 24,
-    marginRight: 5,
-    marginTop: 5
-  },
-  iconBg: {
-  },
-  iconBtn: {
-    fontSize: 36
-  },
-  label: {
-    justifyContent: 'center',
-    textAlign: 'center'
-  }
-});
